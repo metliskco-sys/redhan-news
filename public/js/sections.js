@@ -5,7 +5,7 @@
    created in the desk appear everywhere.
    ============================================ */
 (function () {
-    var NAV_LIMIT = 4;   // keep the top nav short; the footer shows them all
+    var NAV_LIMIT = 8;   // room for every section; the nav scrolls if it ever overflows
 
     function esc(v) {
         return String(v == null ? '' : v)

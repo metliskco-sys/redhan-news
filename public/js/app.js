@@ -228,14 +228,9 @@ class RedhanApp {
             b.classList.toggle('is-active', b.dataset.category === category);
         });
 
-        // Sync top nav links
-        const navByCategory = { politics: 'news', business: 'business', climate: 'climate', culture: 'lifestyle' };
-        document.querySelectorAll('.nav-link').forEach(l => {
-            const section = l.dataset.section;
-            const isActive = category === 'all'
-                ? section === 'home'
-                : navByCategory[category] === section;
-            l.classList.toggle('is-active', isActive);
+        // Sync top nav links (rendered by sections.js with data-category)
+        document.querySelectorAll('.nav-link[data-category]').forEach(l => {
+            l.classList.toggle('is-active', l.dataset.category === category);
         });
 
         if (push && window.history && window.history.pushState) {
@@ -336,32 +331,15 @@ class RedhanApp {
             });
         });
 
-        // Top navigation links: map to category filters with real URL updates
-        const navCategory = {
-            home: 'all', news: 'politics', business: 'business',
-            climate: 'climate', lifestyle: 'culture', gallery: null
-        };
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const section = link.dataset.section;
-                if (!section) return;
-
-                if (section === 'search') {
-                    searchBar?.classList.add('is-open');
-                    searchInput?.focus();
-                    return;
-                }
-
-                const category = navCategory[section];
-                if (category === null) {
-                    this.showToast('Gallery is coming soon.', 'info');
-                    return;
-                }
-
-                this.setCategory(category);
-                document.getElementById('articleGrid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
+        // Top navigation links filter the feed and update the URL.
+        // Sections are rendered dynamically by sections.js, so bind by data-category.
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest && e.target.closest('.nav-link[data-category]');
+            if (!link) return;
+            e.preventDefault();
+            const category = link.dataset.category;
+            this.setCategory(category === 'all' ? 'all' : category);
+            document.getElementById('articleGrid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
 
         // Browser back/forward should restore the category view
@@ -596,6 +574,7 @@ class RedhanApp {
             this.renderArticles();
             this.renderCategories();
             this.renderAds();
+            if (window.RedhanSections) window.RedhanSections.load();
         } catch (error) {
             clearTimeout(loadingTimeout);
             console.error('Error loading initial data:', error);
@@ -1244,6 +1223,42 @@ class RedhanApp {
             console.error('Error loading comments:', error);
             this.failCell('commentsTable', 5, 'Could not load comments.');
         }
+    }
+
+    applyCommentFilter() {
+        const tbody = document.getElementById('commentsTable');
+        if (!tbody) return;
+
+        const status = document.getElementById('commentStatusFilter')?.value || '';
+        const rows = (this.adminComments || []).filter(c => !status || c.status === status);
+
+        tbody.innerHTML = rows.length === 0
+            ? '<tr><td colspan="6" class="empty-cell">No comments match this filter.</td></tr>'
+            : rows.map(c => `
+                <tr>
+                    <td>
+                        <b>${this.esc(c.author_name)}</b><br>
+                        <span style="font-size:.72rem;color:var(--text-faint)">${this.esc(c.author_email)}</span>
+                    </td>
+                    <td style="max-width:200px">${this.esc(c.article_title || '—')}</td>
+                    <td style="max-width:260px">${this.esc(c.content)}</td>
+                    <td>${this.commentBadge(c.status)}</td>
+                    <td>${this.formatDate(c.created_at)}</td>
+                    <td><div class="cell-actions">
+                        ${c.status !== 'approved' ? `<button class="btn--icon" title="Approve" aria-label="Approve" onclick="app.moderateComment(${c.id},'approved')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"></path></svg></button>` : ''}
+                        <button class="btn--icon" title="Mark spam" aria-label="Mark spam" onclick="app.moderateComment(${c.id},'spam')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+                        <button class="btn--icon danger" title="Delete" aria-label="Delete" onclick="app.deleteComment(${c.id})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path></svg></button>
+                    </div></td>
+                </tr>`).join('');
+    }
+
+    commentBadge(status) {
+        const map = {
+            approved: 'badge--ok',
+            pending: 'badge--warn',
+            spam: 'badge--err'
+        };
+        return `<span class="badge ${map[status] || ''}">${this.esc(status || 'unknown')}</span>`;
     }
 
     async moderateComment(id, status) {
@@ -2032,6 +2047,7 @@ class RedhanApp {
             this.closeModal('categoryModal');
             this.loadCategories();
             await this.loadInitialData();
+            if (window.RedhanSections) window.RedhanSections.load();
         } catch (error) {
             this.showToast(error.message, 'error');
         }

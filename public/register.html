@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create account — Redhan</title>
+    <meta name="robots" content="noindex">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <!-- Ambient background: waves + glowing phytoplankton -->
+    <div class="ambient" aria-hidden="true">
+        <span class="orb orb--1" data-depth="22"></span>
+        <span class="orb orb--2" data-depth="40"></span>
+        <span class="orb orb--3" data-depth="30"></span>
+    </div>
+
+    <main class="auth">
+        <aside class="auth__aside">
+            <a href="/" class="logo logo--mark" aria-label="Redhan"><img src="/images/logo-header-trim.png" alt="Redhan" width="54" height="54"></a>
+
+            <div class="auth__quote">
+                <p>“Sovereignty of the story belongs to the people who live it.”</p>
+                <cite>Redhan Media · Est. Malé</cite>
+            </div>
+
+            <p style="font-size:.75rem;color:var(--text-faint)">
+                New accounts start as readers. Editorial roles are granted by an administrator.
+            </p>
+        </aside>
+
+        <section class="auth__main">
+            <div class="auth__card">
+                <span class="kicker">Join the desk</span>
+                <h1 class="auth__title">Create account</h1>
+                <p class="auth__sub">Register to comment and follow coverage.</p>
+
+                <form class="auth__form" id="registerForm" novalidate>
+                    <div class="field">
+                        <label for="name">Full name</label>
+                        <input type="text" id="name" name="name" required autocomplete="name" placeholder="Aminath Shauna">
+                    </div>
+                    <div class="field">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@example.com">
+                    </div>
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required minlength="6" autocomplete="new-password" placeholder="At least 6 characters">
+                    </div>
+                    <button type="submit" class="btn btn--solid btn--block">Create account</button>
+                </form>
+
+                <p class="auth__foot">
+                    <span>Already registered? <a href="/login">Sign in</a></span>
+                    <a href="/">← Back to site</a>
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/ads.js"></script>
+    <script src="/js/ambient.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        (function () {
+            const form = document.getElementById('registerForm');
+            if (!form) return;
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('name').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+
+                if (!name || !email || !password) {
+                    alert('Please complete every field.');
+                    return;
+                }
+                if (password.length < 8) {
+                    alert('Your password must be at least 8 characters.');
+                    return;
+                }
+                if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+                    alert('Your password needs at least one letter and one number.');
+                    return;
+                }
+
+                try {
+                    const data = await api.signup(email, name, password);
+                    api.setToken(data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.href = '/';
+                } catch (error) {
+                    alert(error.message || 'Registration failed.');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

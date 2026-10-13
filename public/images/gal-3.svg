@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0.6" y2="1">
+<stop offset="0" stop-color="#081426"/><stop offset="1" stop-color="#04101c"/>
+</linearGradient>
+<radialGradient id="glow" cx="0.7" cy="0.2" r="0.8">
+<stop offset="0" stop-color="#4aa3ef" stop-opacity="0.34"/><stop offset="1" stop-color="#4aa3ef" stop-opacity="0"/>
+</radialGradient>
+<radialGradient id="glow2" cx="0.2" cy="0.85" r="0.7">
+<stop offset="0" stop-color="#8b93f0" stop-opacity="0.28"/><stop offset="1" stop-color="#8b93f0" stop-opacity="0"/>
+</radialGradient>
+</defs>
+<rect width="1200" height="900" fill="url(#bg)"/>
+<rect width="1200" height="900" fill="url(#glow)"/>
+<rect width="1200" height="900" fill="url(#glow2)"/>
+<ellipse cx="600" cy="520" rx="250" ry="60" fill="#0b2a1e" fill-opacity="0.9"/><polyline points="0,545.0 40,547.8 80,550.3 120,552.3 160,553.6 200,554.0 240,553.6 280,552.3 320,550.3 360,547.8 400,545.0 440,542.2 480,539.7 520,537.7 560,536.4 600,536.0 640,536.4 680,537.7 720,539.7 760,542.2 800,545.0 840,547.8 880,550.3 920,552.3 960,553.6 1000,554.0 1040,553.6 1080,552.3 1120,550.3 1160,547.8 1200,545.0" fill="none" stroke="#dcf3ff" stroke-opacity="0.50" stroke-width="2.2"/><polyline points="0,616.3 40,617.5 80,617.7 120,617.1 160,615.7 200,613.6 240,611.0 280,608.2 320,605.5 360,603.1 400,601.2 440,600.0 480,599.8 520,600.4 560,601.8 600,603.9 640,606.5 680,609.3 720,612.0 760,614.4 800,616.3 840,617.5 880,617.7 920,617.1 960,615.7 1000,613.6 1040,611.0 1080,608.2 1120,605.5 1160,603.1 1200,601.2" fill="none" stroke="#dcf3ff" stroke-opacity="0.43" stroke-width="2.8"/><polyline points="0,680.7 40,679.1 80,676.9 120,674.3 160,671.5 200,668.8 240,666.4 280,664.7 320,663.7 360,663.6 400,664.3 440,665.9 480,668.1 520,670.7 560,673.5 600,676.2 640,678.6 680,680.3 720,681.3 760,681.4 800,680.7 840,679.1 880,676.9 920,674.3 960,671.5 1000,668.8 1040,666.4 1080,664.7 1120,663.7 1160,663.6 1200,664.3" fill="none" stroke="#dcf3ff" stroke-opacity="0.36" stroke-width="3.4"/><polyline points="0,737.5 40,734.7 80,732.0 120,729.8 160,728.2 200,727.3 240,727.4 280,728.3 320,730.0 360,732.3 400,735.0 440,737.8 480,740.5 520,742.7 560,744.3 600,745.2 640,745.1 680,744.2 720,742.5 760,740.2 800,737.5 840,734.7 880,732.0 920,729.8 960,728.2 1000,727.3 1040,727.4 1080,728.3 1120,730.0 1160,732.3 1200,735.0" fill="none" stroke="#dcf3ff" stroke-opacity="0.29" stroke-width="4.0"/><path d="M600 360 C 560 300, 640 280, 600 220" stroke="#04140d" stroke-width="14" fill="none"/><path d="M600 232 C 540 200, 520 172, 470 190 M600 232 C 660 200, 690 176, 736 196 M600 232 C 590 180, 600 150, 640 140 M600 232 C 570 190, 540 176, 500 168" stroke="#04140d" stroke-width="11" fill="none" stroke-linecap="round"/>
+</svg>

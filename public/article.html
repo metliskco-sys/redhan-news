@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Article — Redhan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/embeds.css">
+</head>
+<body>
+
+    <div class="masthead">
+        <div class="masthead__meta">
+            <span>Malé, Maldives</span>
+            <span class="mid hide-sm" id="todayDate">—</span>
+            <span class="hide-sm">Independent reporting, in English</span>
+        </div>
+    </div>
+
+    <!-- Ambient background + scroll progress -->
+    <div class="ambient" aria-hidden="true">
+        <span class="orb orb--1" data-depth="18"></span>
+        <span class="orb orb--2" data-depth="44"></span>
+        <span class="orb orb--3" data-depth="30"></span>
+    </div>
+    <div class="progress" aria-hidden="true"><span class="progress__bar" id="scrollProgress"></span></div>
+
+    <header class="site-header" id="siteHeader">
+        <div class="header-container">
+            <a href="/" class="logo logo--mark" aria-label="Redhan — home"><img src="/images/logo-header-trim.png" alt="Redhan" width="72" height="72"></a>
+            <nav class="main-nav" id="mainNav" aria-label="Primary">
+                <ul class="nav-links">
+                    <li><a href="/" class="nav-link">Home</a></li>
+                    <li><a href="/?category=politics" class="nav-link">Politics</a></li>
+                    <li><a href="/?category=business" class="nav-link">Business</a></li>
+                    <li><a href="/?category=climate" class="nav-link">Climate</a></li>
+                    <li><a href="/?category=culture" class="nav-link">Culture</a></li>
+                    <li><a href="/gallery" class="nav-link">Gallery</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <a href="/" class="btn btn--sm">All stories</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- AD: header banner -->
+    <div class="shell">
+        <div class="adunit adunit--banner" data-ad="header">
+            <a class="adunit__link" href="#" target="_blank" rel="noopener sponsored">
+                <span class="adunit__tag">Advertisement</span>
+                    <span class="adunit__cta"><b>Advertise here</b><span>Reach readers across the Maldives</span></span>
+                <img src="" alt="">
+            </a>
+        </div>
+    </div>
+
+
+    <main class="shell">
+        <div class="layout layout--article" id="articleLayout">
+            <div id="articleContainer">
+                <div class="state">
+                    <h3>Loading story</h3>
+                    <p>One moment while we fetch the piece.</p>
+                </div>
+            </div>
+
+            <aside class="rail">
+                <div class="rail__block">
+                    <div class="adunit adunit--rail" data-ad="rail">
+                        <a class="adunit__link" href="#" target="_blank" rel="noopener sponsored">
+                            <span class="adunit__tag">Advertisement</span>
+                    <span class="adunit__cta"><b>Advertise here</b><span>Reach readers across the Maldives</span></span>
+                            <img src="" alt="">
+                        </a>
+                    </div>
+                </div>
+                <div class="rail__block">
+                    <div class="rail__head"><h2 class="rail__title">Top Stories</h2><hr class="rule"></div>
+                    <div class="top-stories" id="topStories"></div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <section class="cta">
+        <span class="kicker kicker--plain">More from Redhan</span>
+        <h3>Every story from the atolls, in one place.</h3>
+        <p>Politics, business, climate and culture — reported daily.</p>
+        <a href="/" class="btn btn--solid">Browse all stories</a>
+    </section>
+
+    <!-- AD: footer banner -->
+    <div class="shell">
+        <div class="adunit adunit--banner" data-ad="footer">
+            <a class="adunit__link" href="#" target="_blank" rel="noopener sponsored">
+                <span class="adunit__tag">Advertisement</span>
+                    <span class="adunit__cta"><b>Advertise here</b><span>Reach readers across the Maldives</span></span>
+                <img src="" alt="">
+            </a>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="shell">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="logo logo--footer" aria-label="Redhan Online"><img src="/images/logo-footer-trim.png" alt="Redhan Online" width="288" height="82"></a>
+                    <p>Independent news from the Maldives, reported in English for readers at home and abroad.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Sections</h4>
+                    <ul>
+                        <li><a href="/?category=politics">Politics</a></li>
+                        <li><a href="/?category=business">Business</a></li>
+                        <li><a href="/?category=climate">Climate</a></li>
+                        <li><a href="/?category=culture">Culture</a></li>
+                        <li><a href="/gallery">Gallery</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="/about">About us</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                        <li><a href="/careers">Careers</a></li>
+                        <li><a href="/advertise">Advertise</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="/privacy">Privacy</a></li>
+                        <li><a href="/terms">Terms</a></li>
+                        <li><a href="/desk">Staff desk</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="shell">
+            <div class="colophon">
+                <span>&copy; <span id="year">2026</span> Redhan Media Pvt. Ltd. All rights reserved.</span>
+                <span>Set in Fraunces &amp; Inter</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/analytics.js"></script>
+    <script src="/js/ads.js"></script>
+    <script src="/js/embeds.js"></script>
+    <script src="/js/ambient.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/article.js"></script>
+</body>
+</html>

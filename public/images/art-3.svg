@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0.6" y2="1">
+<stop offset="0" stop-color="#081426"/><stop offset="1" stop-color="#04101c"/>
+</linearGradient>
+<radialGradient id="glow" cx="0.7" cy="0.2" r="0.8">
+<stop offset="0" stop-color="#4aa3ef" stop-opacity="0.34"/><stop offset="1" stop-color="#4aa3ef" stop-opacity="0"/>
+</radialGradient>
+<radialGradient id="glow2" cx="0.2" cy="0.85" r="0.7">
+<stop offset="0" stop-color="#8b93f0" stop-opacity="0.28"/><stop offset="1" stop-color="#8b93f0" stop-opacity="0"/>
+</radialGradient>
+</defs>
+<rect width="1200" height="675" fill="url(#bg)"/>
+<rect width="1200" height="675" fill="url(#glow)"/>
+<rect width="1200" height="675" fill="url(#glow2)"/>
+<g fill="#12060a" fill-opacity="0.9"><rect x="140" y="520" width="18" height="150" rx="9"/><rect x="258" y="480" width="18" height="190" rx="9"/><rect x="376" y="520" width="18" height="150" rx="9"/><rect x="494" y="480" width="18" height="190" rx="9"/><rect x="612" y="520" width="18" height="150" rx="9"/><rect x="730" y="480" width="18" height="190" rx="9"/><rect x="848" y="520" width="18" height="150" rx="9"/><rect x="966" y="480" width="18" height="190" rx="9"/><rect x="1084" y="520" width="18" height="150" rx="9"/><ellipse cx="600" cy="520" rx="360" ry="34"/></g><g fill="#8ec9f8" fill-opacity="0.4"><circle cx="149" cy="500" r="7"/><circle cx="267" cy="500" r="7"/><circle cx="385" cy="500" r="7"/><circle cx="503" cy="500" r="7"/><circle cx="621" cy="500" r="7"/><circle cx="739" cy="500" r="7"/><circle cx="857" cy="500" r="7"/><circle cx="975" cy="500" r="7"/><circle cx="1093" cy="500" r="7"/></g><polyline points="0,592.0 40,593.9 80,595.5 120,596.9 160,597.7 200,598.0 240,597.7 280,596.9 320,595.5 360,593.9 400,592.0 440,590.1 480,588.5 520,587.1 560,586.3 600,586.0 640,586.3 680,587.1 720,588.5 760,590.1 800,592.0 840,593.9 880,595.5 920,596.9 960,597.7 1000,598.0 1040,597.7 1080,596.9 1120,595.5 1160,593.9 1200,592.0" fill="none" stroke="#dcf3ff" stroke-opacity="0.30" stroke-width="2.2"/><polyline points="0,701.0 40,701.8 80,702.0 120,701.6 160,700.6 200,699.2 240,697.5 280,695.7 320,693.8 360,692.2 400,691.0 440,690.2 480,690.0 520,690.4 560,691.4 600,692.8 640,694.5 680,696.3 720,698.2 760,699.8 800,701.0 840,701.8 880,702.0 920,701.6 960,700.6 1000,699.2 1040,697.5 1080,695.7 1120,693.8 1160,692.2 1200,691.0" fill="none" stroke="#dcf3ff" stroke-opacity="0.23" stroke-width="2.8"/>
+</svg>

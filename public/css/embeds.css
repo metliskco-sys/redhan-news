@@ -1,0 +1,29 @@
+/* Embed inserter in the article editor */
+.embed-insert {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.embed-insert input {
+    flex: 1;
+    min-width: 240px;
+    padding: 0.7rem 0.85rem;
+    background: var(--navy-950);
+    border: 1px solid var(--line-mid);
+    border-radius: var(--radius);
+    color: var(--text);
+    transition: border-color var(--fast), box-shadow var(--fast);
+}
+
+.embed-insert input:focus {
+    outline: none;
+    border-color: var(--sky-400);
+    box-shadow: 0 0 0 3px var(--sky-glow);
+}
+
+.embed-insert .btn[disabled] { opacity: 0.6; cursor: wait; }
+
+#embedHint.is-error { color: var(--err); }
+#embedHint.is-ok { color: var(--ok); }

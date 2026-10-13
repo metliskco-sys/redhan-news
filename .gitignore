@@ -1,0 +1,25 @@
+# ---- Secrets and environment ----
+.env
+.env.*
+!.env.example
+
+# ---- Runtime data (contains password hashes and user content) ----
+db.json
+db.json.tmp
+uploads/
+*.log
+
+# ---- Dependencies ----
+node_modules/
+
+# ---- Build / tooling cruft ----
+.git/
+
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+npm-debug.log*
+coverage/
+.tmp/

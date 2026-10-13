@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0.6" y2="1">
+<stop offset="0" stop-color="#081426"/><stop offset="1" stop-color="#04101c"/>
+</linearGradient>
+<radialGradient id="glow" cx="0.7" cy="0.2" r="0.8">
+<stop offset="0" stop-color="#4aa3ef" stop-opacity="0.34"/><stop offset="1" stop-color="#4aa3ef" stop-opacity="0"/>
+</radialGradient>
+<radialGradient id="glow2" cx="0.2" cy="0.85" r="0.7">
+<stop offset="0" stop-color="#8b93f0" stop-opacity="0.28"/><stop offset="1" stop-color="#8b93f0" stop-opacity="0"/>
+</radialGradient>
+</defs>
+<rect width="1200" height="900" fill="url(#bg)"/>
+<rect width="1200" height="900" fill="url(#glow)"/>
+<rect width="1200" height="900" fill="url(#glow2)"/>
+<polyline points="0,560.0 40,562.5 80,564.7 120,566.5 160,567.6 200,568.0 240,567.6 280,566.5 320,564.7 360,562.5 400,560.0 440,557.5 480,555.3 520,553.5 560,552.4 600,552.0 640,552.4 680,553.5 720,555.3 760,557.5 800,560.0 840,562.5 880,564.7 920,566.5 960,567.6 1000,568.0 1040,567.6 1080,566.5 1120,564.7 1160,562.5 1200,560.0" fill="none" stroke="#dcf3ff" stroke-opacity="0.40" stroke-width="2.2"/><polyline points="0,626.7 40,627.7 80,628.0 120,627.5 160,626.2 200,624.3 240,622.0 280,619.5 320,617.1 360,614.9 400,613.3 440,612.3 480,612.0 520,612.5 560,613.8 600,615.7 640,618.0 680,620.5 720,622.9 760,625.1 800,626.7 840,627.7 880,628.0 920,627.5 960,626.2 1000,624.3 1040,622.0 1080,619.5 1120,617.1 1160,614.9 1200,613.3" fill="none" stroke="#dcf3ff" stroke-opacity="0.33" stroke-width="2.8"/><polyline points="0,687.3 40,685.9 80,683.9 120,681.6 160,679.1 200,676.7 240,674.6 280,673.0 320,672.2 360,672.1 400,672.7 440,674.1 480,676.1 520,678.4 560,680.9 600,683.3 640,685.4 680,687.0 720,687.8 760,687.9 800,687.3 840,685.9 880,683.9 920,681.6 960,679.1 1000,676.7 1040,674.6 1080,673.0 1120,672.2 1160,672.1 1200,672.7" fill="none" stroke="#dcf3ff" stroke-opacity="0.26" stroke-width="3.4"/><polyline points="0,741.1 40,738.6 80,736.3 120,734.3 160,732.8 200,732.1 240,732.1 280,732.9 320,734.4 360,736.5 400,738.9 440,741.4 480,743.7 520,745.7 560,747.2 600,747.9 640,747.9 680,747.1 720,745.6 760,743.5 800,741.1 840,738.6 880,736.3 920,734.3 960,732.8 1000,732.1 1040,732.1 1080,732.9 1120,734.4 1160,736.5 1200,738.9" fill="none" stroke="#dcf3ff" stroke-opacity="0.19" stroke-width="4.0"/><g fill="#0a3a3a" fill-opacity="0.95"><ellipse cx="300" cy="600" rx="120" ry="46"/><ellipse cx="620" cy="640" rx="150" ry="52"/><ellipse cx="940" cy="596" rx="110" ry="42"/></g><g stroke="#dcf3ff" stroke-opacity="0.35" stroke-width="2" fill="none"><ellipse cx="300" cy="600" rx="120" ry="46"/><ellipse cx="620" cy="640" rx="150" ry="52"/><ellipse cx="940" cy="596" rx="110" ry="42"/></g><g fill="#8ec9f8" fill-opacity="0.5"><circle cx="330" cy="520" r="4"/><circle cx="420" cy="560" r="4"/><circle cx="510" cy="520" r="4"/><circle cx="600" cy="560" r="4"/><circle cx="690" cy="520" r="4"/><circle cx="780" cy="560" r="4"/><circle cx="870" cy="520" r="4"/></g>
+</svg>

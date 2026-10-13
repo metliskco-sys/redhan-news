@@ -1,0 +1,22 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+#
+# Render detects this file in the repo root and offers a one-click deploy.
+# JWT_SECRET is deliberately left empty (sync: false) so Render prompts for
+# it during setup — the server refuses to start in production without one.
+
+services:
+  - type: web
+    name: redhan-news
+    runtime: node
+    plan: free
+    region: singapore          # closest region to the Maldives
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        sync: false            # Render will ask you to supply this
+      - key: PORT
+        value: "3000"          # Render also injects its own PORT; the app honours it

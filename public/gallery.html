@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery — Redhan</title>
+    <meta name="description" content="Photography and visual reporting from across the Maldives — shores, surf, reefs and city life.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/gallery.css">
+</head>
+<body>
+    <div class="ambient" aria-hidden="true">
+        <span class="orb orb--1" data-depth="22"></span>
+        <span class="orb orb--2" data-depth="40"></span>
+        <span class="orb orb--3" data-depth="30"></span>
+    </div>
+
+    <div class="masthead">
+        <div class="masthead__meta">
+            <span>Malé, Maldives</span>
+            <span class="mid hide-sm" id="todayDate">—</span>
+            <span class="hide-sm">Independent reporting, in English</span>
+        </div>
+    </div>
+
+    <header class="site-header" id="siteHeader">
+        <div class="header-container">
+            <a href="/" class="logo logo--mark" aria-label="Redhan — home"><img src="/images/logo-header-trim.png" alt="Redhan" width="72" height="72"></a>
+            <nav class="main-nav" id="mainNav" aria-label="Primary">
+                <ul class="nav-links">
+                    <li><a href="/" class="nav-link">Home</a></li>
+                    <li><a href="/?category=politics" class="nav-link">Politics</a></li>
+                    <li><a href="/?category=business" class="nav-link">Business</a></li>
+                    <li><a href="/?category=climate" class="nav-link">Climate</a></li>
+                    <li><a href="/gallery" class="nav-link is-active">Gallery</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <a href="/desk" class="btn btn--sm">Staff desk</a>
+                <button class="icon-btn nav-toggle" id="mobileNavToggle" aria-label="Menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- AD: header banner -->
+    <div class="shell">
+        <div class="adunit adunit--banner" data-ad="header">
+            <a class="adunit__link" href="#" target="_blank" rel="noopener sponsored">
+                <span class="adunit__tag">Advertisement</span>
+                    <span class="adunit__cta"><b>Advertise here</b><span>Reach readers across the Maldives</span></span>
+                <img src="" alt="">
+            </a>
+        </div>
+    </div>
+
+
+    <main class="shell">
+        <section class="gal-hero">
+            <span class="kicker">Visual desk</span>
+            <h1 class="gal-hero__title">The Maldives, frame by frame</h1>
+            <p class="gal-hero__lede">
+                Reporting from the shoreline out to the deep. Click any frame to open it.
+            </p>
+        </section>
+
+        <div class="gal-filters" id="galFilters">
+            <button class="chip is-active" data-filter="all">All</button>
+            <button class="chip" data-filter="night">Night</button>
+            <button class="chip" data-filter="surf">Surf</button>
+            <button class="chip" data-filter="islands">Islands</button>
+            <button class="chip" data-filter="reef">Reef</button>
+            <button class="chip" data-filter="life">Island life</button>
+        </div>
+
+        <div class="gal-grid" id="galGrid"></div>
+    </main>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+        <div class="lightbox__scrim" data-close></div>
+        <figure class="lightbox__panel">
+            <button class="lightbox__close" data-close aria-label="Close">&times;</button>
+            <img src="" alt="" id="lightboxImg">
+            <figcaption class="lightbox__cap">
+                <b id="lightboxTitle"></b>
+                <span id="lightboxMeta"></span>
+            </figcaption>
+            <button class="lightbox__nav lightbox__nav--prev" id="lightboxPrev" aria-label="Previous">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"></path></svg>
+            </button>
+            <button class="lightbox__nav lightbox__nav--next" id="lightboxNext" aria-label="Next">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"></path></svg>
+            </button>
+        </figure>
+    </div>
+
+    <!-- AD: footer banner -->
+    <div class="shell">
+        <div class="adunit adunit--banner" data-ad="footer">
+            <a class="adunit__link" href="#" target="_blank" rel="noopener sponsored">
+                <span class="adunit__tag">Advertisement</span>
+                    <span class="adunit__cta"><b>Advertise here</b><span>Reach readers across the Maldives</span></span>
+                <img src="" alt="">
+            </a>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="shell">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="logo logo--footer" aria-label="Redhan Online"><img src="/images/logo-footer-trim.png" alt="Redhan Online" width="288" height="82"></a>
+                    <p>Independent news from the Maldives, reported in English for readers at home and abroad.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Sections</h4>
+                    <ul>
+                        <li><a href="/?category=politics">Politics</a></li>
+                        <li><a href="/?category=business">Business</a></li>
+                        <li><a href="/?category=climate">Climate</a></li>
+                        <li><a href="/gallery">Gallery</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="/about">About us</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                        <li><a href="/careers">Careers</a></li>
+                        <li><a href="/advertise">Advertise</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="/privacy">Privacy</a></li>
+                        <li><a href="/terms">Terms</a></li>
+                        <li><a href="/cookies">Cookies</a></li>
+                        <li><a href="/desk">Staff desk</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="shell">
+            <div class="colophon">
+                <span>&copy; <span id="year">2026</span> Redhan Media Pvt. Ltd. All rights reserved.</span>
+                <span>Set in Fraunces &amp; Inter</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/analytics.js"></script>
+    <script src="/js/ads.js"></script>
+    <script src="/js/ambient.js"></script>
+    <script src="/js/gallery.js"></script>
+</body>
+</html>

@@ -1227,7 +1227,7 @@ svg { flex-shrink: 0; }
 .field textarea { resize: vertical; min-height: 120px; font-family: inherit; }
 .field select { appearance: none; background-image: none; cursor: pointer; }
 
-.field--row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+.field--row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.85rem; }
 .field__hint { font-size: 0.72rem; color: var(--text-faint); }
 
 /* ============================================
@@ -1928,14 +1928,14 @@ svg { flex-shrink: 0; }
    RESPONSIVE
    ============================================ */
 @media (max-width: 1080px) {
-    .layout { grid-template-columns: 1fr; gap: 3rem; }
+    .layout { grid-template-columns: minmax(0, 1fr); gap: 3rem; }
     .rail { position: static; }
-    .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
-    .dash-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; }
+    .dash-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 900px) {
-    .auth { grid-template-columns: 1fr; }
+    .auth { grid-template-columns: minmax(0, 1fr); }
     .auth__aside { display: none; }
 }
 
@@ -1967,10 +1967,10 @@ svg { flex-shrink: 0; }
     .main-nav { justify-content: flex-end; }
 
     .layout { padding: 1.75rem 0 3rem; }
-    .grid { grid-template-columns: 1fr; gap: 2rem; }
+    .grid { grid-template-columns: minmax(0, 1fr); gap: 2rem; }
     .lead__title { font-size: 2.15rem; max-width: none; }
 
-    .footer-grid { grid-template-columns: 1fr; gap: 1.75rem; padding-bottom: 2rem; }
+    .footer-grid { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; padding-bottom: 2rem; }
 
     .article__byline { gap: 0.75rem; }
     .sharebar { margin-left: 0; width: 100%; }
@@ -1978,9 +1978,9 @@ svg { flex-shrink: 0; }
     .related-card { grid-template-columns: 88px 1fr; }
     .related-card img { width: 88px; height: 62px; }
 
-    .field--row { grid-template-columns: 1fr; }
+    .field--row { grid-template-columns: minmax(0, 1fr); }
 
-    .admin { grid-template-columns: 1fr; }
+    .admin { grid-template-columns: minmax(0, 1fr); }
     .admin__side {
         position: fixed;
         inset: auto 0 0 0;
@@ -2491,8 +2491,9 @@ main, .site-footer, .cta, .masthead,
 /* Reading rail slot */
 .adunit--rail .adunit__link {
     position: relative;
-    aspect-ratio: 4 / 3;
-    max-height: 320px;
+    display: block;
+    width: 100%;
+    height: 300px;
 }
 .adunit--rail .adunit__link img {
     position: absolute;
@@ -2506,8 +2507,9 @@ main, .site-footer, .cta, .masthead,
 .adunit--banner { margin: 0 0 2.25rem; }
 .adunit--banner .adunit__link {
     position: relative;
-    aspect-ratio: 6 / 1;
-    max-height: 170px;      /* keeps top and bottom banners identical */
+    display: block;
+    width: 100%;
+    height: 170px;          /* explicit, so top and bottom match exactly */
 }
 .adunit--banner .adunit__link img {
     position: absolute;
@@ -2685,8 +2687,8 @@ main, .site-footer, .cta, .masthead,
 
 .adslot__warn b { color: #ffe6b8; }
 
-.adslot__body { grid-template-columns: 1fr; }
-    .adunit--banner .adunit__link { aspect-ratio: 3 / 1; }
+.adslot__body { grid-template-columns: minmax(0, 1fr); }
+    .adunit--banner .adunit__link { height: 120px; }
 }
 
 /* ---------- Vacant advert space (nothing uploaded yet) ---------- */
@@ -2743,8 +2745,9 @@ main, .site-footer, .cta, .masthead,
 /* Rail + in-article slots sit tighter than banners */
 .adunit--article .adunit__link {
     position: relative;
-    aspect-ratio: 6 / 1;
-    max-height: 170px;
+    display: block;
+    width: 100%;
+    height: 150px;
 }
 .adunit--article .adunit__link img {
     position: absolute;
@@ -3065,7 +3068,7 @@ main, .site-footer, .cta, .masthead,
     .lead__title { font-size: 2rem; line-height: 1.1; letter-spacing: -0.02em; }
     .lead__dek { font-size: 1rem; }
     .lead__figure img { aspect-ratio: 3 / 2; }
-    .grid { grid-template-columns: 1fr; gap: 2.25rem; }
+    .grid { grid-template-columns: minmax(0, 1fr); gap: 2.25rem; }
     .card__title { font-size: 1.25rem; }
     .section-head { gap: 1rem; }
     .section-title { font-size: 1.35rem; }
@@ -3085,13 +3088,13 @@ main, .site-footer, .cta, .masthead,
     .rail__title { font-size: 0.98rem; }
 
     /* Banners shrink so they do not dominate a small screen */
-    .adunit--banner .adunit__link { max-height: 96px; }
-    .adunit--banner .adunit__link { aspect-ratio: 6 / 1; }
-    .adunit--rail .adunit__link { max-height: 260px; }
+    .adunit--banner .adunit__link { height: 108px; }
+    .adunit--article .adunit__link { height: 104px; }
+    .adunit--rail .adunit__link { height: 250px; }
 
     /* Footer stacks and stays legible */
     .site-footer { padding-top: 2.5rem; }
-    .footer-grid { grid-template-columns: 1fr; gap: 1.75rem; padding-bottom: 2rem; }
+    .footer-grid { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; padding-bottom: 2rem; }
     .footer-brand p { font-size: 0.9rem; }
     .colophon { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
 
@@ -3140,7 +3143,7 @@ main, .site-footer, .cta, .masthead,
     .perf-card b { font-size: 1.5rem; }
     .chart { gap: 0.3rem; height: 140px; }
     .chart__label { font-size: 0.55rem; }
-    .adslot__body { grid-template-columns: 1fr; }
+    .adslot__body { grid-template-columns: minmax(0, 1fr); }
     .adslot__preview { max-width: 260px; }
 
     /* Touch ergonomics: no 300ms delay, no blue flash */

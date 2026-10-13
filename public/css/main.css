@@ -2489,13 +2489,33 @@ main, .site-footer, .cta, .masthead,
 }
 
 /* Reading rail slot */
-.adunit--rail .adunit__link { aspect-ratio: 4 / 3; }
-.adunit--rail .adunit__link img { height: 100%; object-fit: cover; }
+.adunit--rail .adunit__link {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    max-height: 320px;
+}
+.adunit--rail .adunit__link img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
 /* Header + footer wide banners */
 .adunit--banner { margin: 0 0 2.25rem; }
-.adunit--banner .adunit__link { aspect-ratio: 6 / 1; }
-.adunit--banner .adunit__link img { height: 100%; object-fit: cover; }
+.adunit--banner .adunit__link {
+    position: relative;
+    aspect-ratio: 6 / 1;
+    max-height: 170px;      /* keeps top and bottom banners identical */
+}
+.adunit--banner .adunit__link img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
 /* In-feed slot between story rows */
 .adunit--inline { margin: 2.5rem 0; }
@@ -2721,8 +2741,18 @@ main, .site-footer, .cta, .masthead,
 }
 
 /* Rail + in-article slots sit tighter than banners */
-.adunit--rail.is-vacant .adunit__link { aspect-ratio: 4 / 3; }
-.adunit--article.is-vacant .adunit__link { aspect-ratio: 6 / 1; }
+.adunit--article .adunit__link {
+    position: relative;
+    aspect-ratio: 6 / 1;
+    max-height: 170px;
+}
+.adunit--article .adunit__link img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
 /* ============================================
    AD PERFORMANCE — dual-series chart + CTR
@@ -2978,4 +3008,155 @@ main, .site-footer, .cta, .masthead,
 
 @media (max-width: 520px) {
     .embed--social { padding: 1.1rem; }
+}
+
+/* ============================================
+   MOBILE — touch-first refinements
+   ============================================ */
+@media (max-width: 768px) {
+    /* Phones: a shorter header, and a taller tap target for the menu */
+    .site-header { height: 62px; }
+    .header-container { height: 62px; gap: 0.75rem; }
+    .logo--mark img { height: 38px; }
+
+    .nav-links {
+        top: 62px;
+        padding: 0.35rem var(--gutter) 1rem;
+        max-height: calc(100vh - 62px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .nav-link {
+        padding: 0.95rem 0;              /* clear 44px tap target */
+        font-size: 0.8rem;
+    }
+
+    .nav-toggle {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: -0.5rem;
+    }
+
+    .nav-toggle span { width: 22px; height: 2px; }
+
+    /* Animate the bars into a cross while open */
+    .nav-toggle.is-active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .nav-toggle.is-active span:nth-child(2) { opacity: 0; }
+    .nav-toggle.is-active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    /* The menu slides in rather than snapping */
+    .nav-links {
+        opacity: 0;
+        transform: translateY(-8px);
+        transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+    .nav-links.is-open { display: flex; opacity: 1; transform: none; }
+
+    /* Lock the page behind the open menu */
+    body.nav-open { overflow: hidden; }
+
+    /* Comfortable reading measure and rhythm */
+    .layout { padding: 1.5rem 0 2.5rem; gap: 2.5rem; }
+    .lead { margin-bottom: 2.5rem; }
+    .lead__title { font-size: 2rem; line-height: 1.1; letter-spacing: -0.02em; }
+    .lead__dek { font-size: 1rem; }
+    .lead__figure img { aspect-ratio: 3 / 2; }
+    .grid { grid-template-columns: 1fr; gap: 2.25rem; }
+    .card__title { font-size: 1.25rem; }
+    .section-head { gap: 1rem; }
+    .section-title { font-size: 1.35rem; }
+    .filters {
+        gap: 0.4rem;
+        margin: 0 calc(var(--gutter) * -0.35);
+        padding: 0 0.35rem;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+    .filters::-webkit-scrollbar { display: none; }
+    .chip { flex: 0 0 auto; padding: 0.5rem 0.8rem; }
+
+    .rail { gap: 1.75rem; }
+    .rail__title { font-size: 0.98rem; }
+
+    /* Banners shrink so they do not dominate a small screen */
+    .adunit--banner .adunit__link { max-height: 96px; }
+    .adunit--banner .adunit__link { aspect-ratio: 6 / 1; }
+    .adunit--rail .adunit__link { max-height: 260px; }
+
+    /* Footer stacks and stays legible */
+    .site-footer { padding-top: 2.5rem; }
+    .footer-grid { grid-template-columns: 1fr; gap: 1.75rem; padding-bottom: 2rem; }
+    .footer-brand p { font-size: 0.9rem; }
+    .colophon { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+
+    /* Content pages */
+    .page-hero { padding: 2.25rem 0 2rem; margin-bottom: 2rem; }
+    .page-hero__title { font-size: 1.85rem; }
+    .page-hero__lede { font-size: 0.95rem; }
+    .page-body { gap: 2rem; }
+    .page-prose h2 { font-size: 1.3rem; }
+    .page-rail { gap: 1.25rem; }
+    .cta { padding: 2.5rem var(--gutter); }
+
+    /* Gallery */
+    .gal-hero { padding-top: 1.75rem; }
+    .gal-hero__title { font-size: 1.85rem; }
+    .gal-grid { columns: 1; }
+    .gal-filters {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        margin: 0 calc(var(--gutter) * -0.35);
+        padding: 0 0.35rem 1.25rem;
+    }
+    .gal-filters::-webkit-scrollbar { display: none; }
+
+    /* Article page */
+    .layout--article { gap: 2rem; padding-top: 1.5rem; }
+    .article__title { font-size: 1.8rem; }
+    .article__dek { font-size: 1.05rem; }
+    .article__byline { gap: 0.7rem; }
+    .sharebar { width: 100%; margin-left: 0; }
+    .sharebar__label { margin-right: 0.5rem; }
+    .prose { font-size: 1.05rem; }
+    .prose > p:first-of-type::first-letter { font-size: 2.8em; }
+    .comments__head { flex-wrap: wrap; gap: 0.6rem; }
+
+    /* Desk */
+    .admin__body { padding: 1rem; }
+    .admin__head { padding: 0.85rem 1rem; }
+    .admin__head h2 { font-size: 1.2rem; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stat { padding: 1rem; }
+    .stat__value { font-size: 1.7rem; }
+    .perf-grid { grid-template-columns: repeat(2, 1fr); }
+    .perf-card { padding: 0.9rem; }
+    .perf-card b { font-size: 1.5rem; }
+    .chart { gap: 0.3rem; height: 140px; }
+    .chart__label { font-size: 0.55rem; }
+    .adslot__body { grid-template-columns: 1fr; }
+    .adslot__preview { max-width: 260px; }
+
+    /* Touch ergonomics: no 300ms delay, no blue flash */
+    a, button, .chip, .tag-chip, .btn, .adslot__preview, .gal-item {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+
+    /* Respect notches and home indicators */
+    .site-footer,
+    .admin__side,
+    .admin__head {
+        padding-left: max(var(--gutter), env(safe-area-inset-left));
+        padding-right: max(var(--gutter), env(safe-area-inset-right));
+    }
+    .admin__side {
+        padding-bottom: max(1.1rem, env(safe-area-inset-bottom));
+    }
 }

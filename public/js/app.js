@@ -251,11 +251,57 @@ class RedhanApp {
     // ============================================
     bindEvents() {
         // Mobile navigation toggle
+
+    /* Mobile menu. The toggle must land on the .nav-links <ul> — the CSS rule
+       is `.nav-links.is-open`, so toggling the wrapping <nav> did nothing. */
+    function menuLinks() {
+        return document.querySelector('.nav-links');
+    }
+
+    function toggleMobileNav() {
+        var links = menuLinks();
+        if (!links) return false;
+        var open = links.classList.toggle('is-open');
+        var btn = document.getElementById('mobileNavToggle');
+        if (btn) {
+            btn.setAttribute('aria-expanded', String(open));
+            btn.classList.toggle('is-active', open);
+        }
+        document.body.classList.toggle('nav-open', open);
+        return open;
+    }
+
+    function closeMobileNav() {
+        var links = menuLinks();
+        if (!links) return;
+        links.classList.remove('is-open');
+        var btn = document.getElementById('mobileNavToggle');
+        if (btn) {
+            btn.setAttribute('aria-expanded', 'false');
+            btn.classList.remove('is-active');
+        }
+        document.body.classList.remove('nav-open');
+    }
+
+    // Dismiss on link tap, Escape, or a tap outside the menu
+    document.addEventListener('click', function (e) {
+        var links = menuLinks();
+        if (!links || !links.classList.contains('is-open')) return;
+        if (e.target.closest && (e.target.closest('.nav-links a') || e.target.closest('#mobileNavToggle'))) {
+            setTimeout(closeMobileNav, 120);
+            return;
+        }
+        if (e.target.closest && !e.target.closest('.site-header')) closeMobileNav();
+    }, true);
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeMobileNav();
+    });
         const mobileNavToggle = document.getElementById('mobileNavToggle');
         const mainNav = document.getElementById('mainNav');
         if (mobileNavToggle && mainNav) {
             mobileNavToggle.addEventListener('click', () => {
-                const isOpen = mainNav.classList.toggle('is-open');
+                const isOpen = toggleMobileNav();
                 mobileNavToggle.setAttribute('aria-expanded', String(isOpen));
             });
         }

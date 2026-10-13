@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="300" viewBox="0 0 1800 300">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0" stop-color="#081426"/><stop offset="0.55" stop-color="#0d1b30"/><stop offset="1" stop-color="#14243d"/>
+</linearGradient>
+<linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0" stop-color="#4aa3ef"/><stop offset="1" stop-color="#8b93f0"/>
+</linearGradient>
+<radialGradient id="glow" cx="0.8" cy="0.5" r="0.6">
+<stop offset="0" stop-color="#4aa3ef" stop-opacity="0.22"/><stop offset="1" stop-color="#4aa3ef" stop-opacity="0"/>
+</radialGradient>
+</defs>
+<rect width="1800" height="300" fill="url(#bg)"/>
+<rect width="1800" height="300" fill="url(#glow)"/>
+<g opacity="0.5" stroke="#4aa3ef" stroke-width="1">
+<path d="M0 186.0 C 300 135.0, 600 234.0, 900 180.0 S 1500 120.0, 1800 192.0" fill="none"/>
+<path d="M0 245.99999999999997 C 400 198.0, 800 285.0, 1200 234.0 S 1600 180.0, 1800 258.0" fill="none" opacity="0.5"/>
+</g>
+<rect x="70" y="88" width="6" height="124" rx="3" fill="url(#accent)"/>
+<text x="112" y="146" font-family="Fraunces, Georgia, serif" font-size="62" font-weight="600" fill="#e7eef9">Your banner here</text>
+<text x="112" y="192" font-family="Inter, sans-serif" font-size="26" fill="#a2b5d0">1800 &#215; 300 &#183; replace from the staff desk</text>
+<text x="1470" y="160" font-family="Inter, sans-serif" font-size="24" font-weight="700" letter-spacing="6" fill="#4aa3ef">ADVERTISE</text>
+</svg>

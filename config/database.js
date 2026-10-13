@@ -174,9 +174,13 @@ function initDb() {
 
     // Advertising is a fixed set of placements that exist everywhere on the
     // site. Each one only carries an uploaded image + a destination link.
+    // Two placements ship live with placeholder creative that lives in the
+    // repo, so a fresh deploy (Render's disk is ephemeral) always shows ads.
+    // Uploaded images can replace them, but will not survive a restart on a
+    // free host — that is the trade-off of an ephemeral filesystem.
     newDb.ad_slots = [
-        { id: 1, name: 'Header banner', position: 'header', label: 'Wide banner below the navigation', image_url: null, link_url: null, is_active: false, created_at: new Date().toISOString() },
-        { id: 2, name: 'Reading rail', position: 'rail', label: 'Sidebar slot on the home page and articles', image_url: null, link_url: null, is_active: false, created_at: new Date().toISOString() },
+        { id: 1, name: 'Header banner', position: 'header', label: 'Wide banner below the navigation', image_url: '/images/ads/header-banner.svg', link_url: 'https://zoom.earth', is_active: true, created_at: new Date().toISOString() },
+        { id: 2, name: 'Reading rail', position: 'rail', label: 'Sidebar slot on the home page and articles', image_url: '/images/ads/rail.svg', link_url: 'https://windy.com', is_active: true, created_at: new Date().toISOString() },
         { id: 3, name: 'In-feed', position: 'inline', label: 'Between the story grid on the home page', image_url: null, link_url: null, is_active: false, created_at: new Date().toISOString() },
         { id: 4, name: 'In article', position: 'article', label: 'Inside every story, below the body', image_url: null, link_url: null, is_active: false, created_at: new Date().toISOString() },
         { id: 5, name: 'Footer banner', position: 'footer', label: 'Wide banner above the footer, site-wide', image_url: null, link_url: null, is_active: false, created_at: new Date().toISOString() }

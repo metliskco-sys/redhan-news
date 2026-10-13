@@ -151,7 +151,14 @@ router.put('/:position', authMiddleware, requireRole('admin', 'superadmin'), [
 
         const updates = {};
         if ('image_url' in req.body) updates.image_url = req.body.image_url || null;
-        if ('link_url' in req.body) updates.link_url = req.body.link_url || null;
+        if ('link_url' in req.body) {
+            // A scheme-less link would resolve as a relative path and go nowhere
+            let link = String(req.body.link_url || '').trim();
+            if (link && !/^https?:\/\//i.test(link) && !link.startsWith('/')) {
+                link = 'https://' + link;
+            }
+            updates.link_url = link || null;
+        }
         if ('is_active' in req.body) updates.is_active = !!req.body.is_active;
 
         const ad = db.upsertAd(position, updates);

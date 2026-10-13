@@ -1480,6 +1480,10 @@ class RedhanApp {
                         <span>${ad.is_active ? 'Live' : 'Off'}</span>
                     </label>
                 </div>
+                ${(!ad.is_active && ad.image_url && ad.link_url) ? `
+                <div class="adslot__warn">
+                    This banner is ready but switched off — flip the switch to <b>Live</b> to show it on the site.
+                </div>` : ''}
 
                 <div class="adslot__body">
                     <div class="adslot__preview" data-ad-drop>
@@ -1589,7 +1593,9 @@ class RedhanApp {
                     if (slotData) {
                         slotData.link_url = payload.link_url;
                         slotData.is_active = payload.is_active;
+                        slotData.image_url = payload.image_url;
                     }
+                    this.renderAdSlots();
                     status.textContent = 'Saved';
                     // Explain the two reasons a saved ad may not appear
                     if (activeToggle.checked && !payload.link_url) {

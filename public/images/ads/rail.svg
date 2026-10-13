@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+<defs>
+<linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#0d1b30"/><stop offset="1" stop-color="#14243d"/>
+</linearGradient>
+<linearGradient id="accent2" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#4aa3ef"/><stop offset="1" stop-color="#8b93f0"/>
+</linearGradient>
+<radialGradient id="glow2" cx="0.5" cy="0.4" r="0.7">
+<stop offset="0" stop-color="#4aa3ef" stop-opacity="0.2"/><stop offset="1" stop-color="#4aa3ef" stop-opacity="0"/>
+</radialGradient>
+</defs>
+<rect width="800" height="600" fill="url(#bg2)"/>
+<rect width="800" height="600" fill="url(#glow2)"/>
+<g opacity="0.45" stroke="#4aa3ef" stroke-width="1">
+<circle cx="400" cy="250" r="150" fill="none"/>
+<circle cx="400" cy="250" r="110" fill="none" opacity="0.6"/>
+<circle cx="400" cy="250" r="70" fill="none" opacity="0.4"/>
+</g>
+<text x="400" y="236" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-size="40" font-weight="600" fill="#e7eef9">Your banner here</text>
+<text x="400" y="286" text-anchor="middle" font-family="Inter, sans-serif" font-size="20" fill="#a2b5d0">800 &#215; 600 &#183; replace from the desk</text>
+<text x="400" y="404" text-anchor="middle" font-family="Inter, sans-serif" font-size="18" font-weight="700" letter-spacing="5" fill="#4aa3ef">ADVERTISE</text>
+</svg>

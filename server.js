@@ -14,6 +14,7 @@ const adRoutes = require('./routes/ads');
 const statsRoutes = require('./routes/stats');
 const pagesRoutes = require('./routes/pages');
 const embedRoutes = require('./routes/embed');
+const commercialRoutes = require('./routes/commercial');
 const settingsRoutes = require('./routes/settings');
 const uploadRoutes = require('./routes/upload');
 
@@ -69,6 +70,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/pages', pagesRoutes);
 app.use('/api/embed', embedRoutes);
+app.use('/api/commercial', commercialRoutes);
 
 // Broad API rate limit (per IP)
 app.use('/api/', security.rateLimit({

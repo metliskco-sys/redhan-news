@@ -261,18 +261,18 @@ class ApiClient {
 
     // Ads — fixed placements
     async getManagedAds() {
-        return this.request('/ads/manage');
+        return this.request('/commercial/slots');
     }
 
     async updateAd(position, data) {
-        return this.request(`/ads/${position}`, {
+        return this.request(`/commercial/slots/${position}`, {
             method: 'PUT',
             body: JSON.stringify(data)
         });
     }
 
     async getAdStats(days = 14) {
-        return this.request(`/ads/stats?days=${days}`);
+        return this.request(`/commercial/metrics?days=${days}`);
     }
 
     // Settings endpoints

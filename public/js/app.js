@@ -1291,8 +1291,18 @@ class RedhanApp {
             this.renderAdSlots();
         } catch (error) {
             console.error('Error loading advert spaces:', error);
-                this.failCell('adsSlots', 1, 'Could not load advert spaces.');
-            wrap.innerHTML = '<div class="empty-cell">Could not load advert spaces.</div>';
+
+            // A 401 is by far the most common cause: the token expired or the
+            // service restarted with a different JWT_SECRET. Say so plainly.
+            const expired = !api.token || /session|invalid|401|unauthor/i.test(error.message || '');
+            this.failCell('adsSlots', 1, expired
+                ? 'Your session has expired. Sign out and sign in again, then reopen the desk.'
+                : `Could not load advert spaces. ${error.message || ''}`);
+
+            if (expired) {
+                wrap.innerHTML += '<div style="text-align:center;margin-top:.75rem">' +
+                    '<a class="btn btn--sm btn--solid" href="/login">Go to sign in</a></div>';
+            }
         }
 
         await this.loadAdPerformance();

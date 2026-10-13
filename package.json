@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "check": "node --check server.js && node --check public/js/app.js && node --check public/js/api.js && node --check public/js/article.js && node --check public/js/ambient.js && node --check public/js/gallery.js && node --check public/js/chrome.js && node --check public/js/ads.js && node --check public/js/embeds.js && node --check public/js/editor.js && node --check config/database.js && node --check routes/upload.js && node --check config/security.js && echo All files pass syntax check"
+    "check": "node --check server.js && node --check public/js/app.js && node --check public/js/api.js && node --check public/js/article.js && node --check public/js/ambient.js && node --check public/js/analytics.js && node --check public/js/gallery.js && node --check public/js/chrome.js && node --check public/js/ads.js && node --check public/js/embeds.js && node --check public/js/editor.js && node --check config/database.js && node --check routes/upload.js && node --check config/security.js && echo All files pass syntax check"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

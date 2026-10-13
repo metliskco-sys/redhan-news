@@ -1234,7 +1234,31 @@ class RedhanApp {
 
         tbody.innerHTML = rows.length === 0
             ? '<tr><td colspan="6" class="empty-cell">No comments match this filter.</td></tr>'
-            : rows.map(c => `
+            : rows.map(c => {
+                // Approve and Unapprove share one slot so an approved comment
+                // can always be sent back to pending.
+                const approveBtn = c.status === 'approved'
+                    ? `<button class="btn--icon" title="Send back to pending" aria-label="Send back to pending" onclick="app.moderateComment(${c.id},'pending')">
+                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                           <path d="M3 7v6h6"></path><path d="M3.5 13a9 9 0 1 0 2.13-9.36L3 7"></path>
+                         </svg>
+                       </button>`
+                    : `<button class="btn--icon" title="Approve" aria-label="Approve" onclick="app.moderateComment(${c.id},'approved')">
+                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                           <path d="M20 6 9 17l-5-5"></path>
+                         </svg>
+                       </button>`;
+
+                // Delete stays available for every status, including approved
+                const spamBtn = c.status === 'spam'
+                    ? ``
+                    : `<button class="btn--icon" title="Mark spam" aria-label="Mark spam" onclick="app.moderateComment(${c.id},'spam')">
+                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                           <path d="M18 6 6 18M6 6l12 12"></path>
+                         </svg>
+                       </button>`;
+
+                return `
                 <tr>
                     <td>
                         <b>${this.esc(c.author_name)}</b><br>
@@ -1245,11 +1269,16 @@ class RedhanApp {
                     <td>${this.commentBadge(c.status)}</td>
                     <td>${this.formatDate(c.created_at)}</td>
                     <td><div class="cell-actions">
-                        ${c.status !== 'approved' ? `<button class="btn--icon" title="Approve" aria-label="Approve" onclick="app.moderateComment(${c.id},'approved')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"></path></svg></button>` : ''}
-                        <button class="btn--icon" title="Mark spam" aria-label="Mark spam" onclick="app.moderateComment(${c.id},'spam')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
-                        <button class="btn--icon danger" title="Delete" aria-label="Delete" onclick="app.deleteComment(${c.id})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path></svg></button>
+                        ${approveBtn}
+                        ${spamBtn}
+                        <button class="btn--icon danger" title="Delete" aria-label="Delete" onclick="app.deleteComment(${c.id})">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                            </svg>
+                        </button>
                     </div></td>
-                </tr>`).join('');
+                </tr>`;
+            }).join('');
     }
 
     commentBadge(status) {

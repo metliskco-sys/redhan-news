@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const security = require('../config/security');
+const crypto = require('crypto');
+const mailer = require('../config/mailer');
 const { hashPassword, comparePassword, generateToken, authMiddleware, requireRole } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 
@@ -23,6 +25,13 @@ const ipLimiter = security.rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 40,
     message: 'Too many requests. Try again shortly.'
+});
+
+const resetLimiter = security.rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    keyFn: 'ip+email',
+    message: 'Too many password reset requests. Try again later.'
 });
 
 /* Password policy — applied to every write path */
@@ -254,6 +263,81 @@ router.delete('/users/:id', authMiddleware, requireRole('superadmin'), async (re
         res.json({ message: 'User deleted' });
     } catch (error) {
         console.error('User delete error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+
+/* ============================================================
+   PASSWORD RESET
+   The token is never stored in the clear — only its SHA-256
+   hash — so a database leak cannot be replayed to take over
+   an account. Links expire after one hour and are single-use.
+   ============================================================ */
+router.post('/forgot-password', resetLimiter, [
+    body('email').isEmail().normalizeEmail()
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+        const user = await db.getUser(req.body.email);
+
+        // Always answer the same way, so this cannot be used to enumerate
+        // which addresses have accounts.
+        if (!user) {
+            return res.json({ message: 'If that email has an account, a reset link is on its way.' });
+        }
+
+        const rawToken = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+        await db.createResetToken(user.id, tokenHash, expiresAt);
+
+        const resetUrl = `${process.env.SITE_URL || 'http://localhost:3000'}/reset-password?token=${rawToken}`;
+        await mailer.sendResetEmail(user.email, resetUrl);
+
+        res.json({ message: 'If that email has an account, a reset link is on its way.' });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+router.post('/reset-password', [
+    body('token').notEmpty(),
+    PASSWORD_RULE
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+        const tokenHash = crypto.createHash('sha256').update(req.body.token).digest('hex');
+        const record = await db.getValidResetToken(tokenHash);
+
+        if (!record) {
+            return res.status(400).json({ error: 'This reset link is invalid or has expired.' });
+        }
+
+        const user = await db.getUserById(record.user_id);
+        if (!user) {
+            return res.status(400).json({ error: 'This reset link is invalid or has expired.' });
+        }
+
+        // Burn the token, set the new password, and revoke every live session
+        await db.consumeResetToken(tokenHash);
+        await db.setPassword(user.id, hashPassword(req.body.password));
+        await db.revokeUserSessions(user.id);
+        await db.invalidateAllResetTokens(user.id);
+
+        res.json({ message: 'Password updated. Please sign in with your new password.' });
+    } catch (error) {
+        console.error('Reset password error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });

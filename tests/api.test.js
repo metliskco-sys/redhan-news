@@ -450,3 +450,134 @@ describe('site analytics', () => {
         assert.ok(!r.body.pages.top.some(p => p.path === '/desk'), 'staff pages are not reader traffic');
     });
 });
+
+describe('password reset', () => {
+    // The token is written to the server log by the dev mailer
+    function latestToken() {
+        return null; // filled per-test from the server log, not available here
+    }
+
+    test('forgot-password never reveals whether an account exists', async () => {
+        const known = await request('POST', '/api/auth/forgot-password', { email: 'super@redhan.mv' });
+        const unknown = await request('POST', '/api/auth/forgot-password', { email: 'definitely-not-a-user@example.com' });
+        assert.equal(known.status, 200);
+        assert.equal(unknown.status, 200);
+        assert.deepEqual(known.body, unknown.body, 'both must return the identical response');
+    });
+
+    test('reset-password rejects a forged token', async () => {
+        const r = await request('POST', '/api/auth/reset-password', {
+            token: 'forged-token-value', password: 'password123'
+        });
+        assert.equal(r.status, 400);
+        assert.match(r.body.error, /invalid or (has )?expired/i);
+    });
+
+    test('reset-password enforces the password policy', async () => {
+        const r = await request('POST', '/api/auth/reset-password', {
+            token: 'forged-token-value', password: 'abc'
+        });
+        assert.equal(r.status, 400);
+    });
+
+    test('reset-password rejects a missing token', async () => {
+        const r = await request('POST', '/api/auth/reset-password', { password: 'password123' });
+        assert.equal(r.status, 400);
+    });
+
+    test('a real token changes the password, invalidates the old one, and cannot be reused', async () => {
+        // Drive the flow against an isolated JSON store so no real user is touched
+        const { spawn } = require('node:child_process');
+        const fs = require('node:fs');
+        const path = require('node:path');
+        const ROOT = path.join(__dirname, '..');
+        const testPort = PORT + 7;
+
+        fs.copyFileSync(path.join(ROOT, 'db.json'), path.join(ROOT, 'db.reset.json'));
+        const child = spawn(process.execPath, [path.join(ROOT, 'server.js')], {
+            env: {
+                ...process.env,
+                PORT: String(testPort),
+                NODE_ENV: 'test',
+                NO_DOTENV: '1',
+                DB_OVERRIDE: path.join(ROOT, 'db.reset.json')
+            },
+            stdio: ['ignore', 'pipe', 'pipe']
+        });
+        delete process.env.DATABASE_URL;
+
+        let log = '';
+        child.stdout.on('data', d => log += d.toString());
+        child.stderr.on('data', d => log += d.toString());
+
+        try {
+            const base = `http://127.0.0.1:${testPort}`;
+            const call = (method, endpoint, body) => new Promise((resolve, reject) => {
+                const data = body ? JSON.stringify(body) : null;
+                const req = require('node:http').request(`${base}${endpoint}`, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(data ? { 'Content-Length': Buffer.byteLength(data) } : {})
+                    }
+                }, res => {
+                    let raw = '';
+                    res.on('data', c => raw += c);
+                    res.on('end', () => {
+                        let json = null;
+                        try { json = raw ? JSON.parse(raw) : null; } catch (_) {}
+                        resolve({ status: res.statusCode, body: json });
+                    });
+                });
+                req.on('error', reject);
+                if (data) req.write(data);
+                req.end();
+            });
+
+            // wait for boot
+            for (let i = 0; i < 40; i++) {
+                try {
+                    const h = await call('GET', '/api/health');
+                    if (h.status === 200) break;
+                } catch (_) {}
+                await new Promise(r => setTimeout(r, 200));
+            }
+
+            // The writer account: change then revert
+            await call('POST', '/api/auth/forgot-password', { email: 'writer@redhan.mv' });
+            await new Promise(r => setTimeout(r, 300));
+
+            const match = /reset-password\?token=([a-f0-9]+)/.exec(log);
+            assert.ok(match, 'the dev mailer must log a reset link');
+            const rawToken = match[1];
+
+            const before = await call('POST', '/api/auth/login', {
+                email: 'writer@redhan.mv', password: 'admin123'
+            });
+            assert.equal(before.status, 200);
+
+            const reset = await call('POST', '/api/auth/reset-password', {
+                token: rawToken, password: 'ResetFlowPass9'
+            });
+            assert.equal(reset.status, 200, 'reset must succeed');
+
+            const afterOld = await call('POST', '/api/auth/login', {
+                email: 'writer@redhan.mv', password: 'admin123'
+            });
+            assert.equal(afterOld.status, 401, 'the old password must stop working');
+
+            const afterNew = await call('POST', '/api/auth/login', {
+                email: 'writer@redhan.mv', password: 'ResetFlowPass9'
+            });
+            assert.equal(afterNew.status, 200, 'the new password must work');
+
+            const reuse = await call('POST', '/api/auth/reset-password', {
+                token: rawToken, password: 'AnotherPass88'
+            });
+            assert.equal(reuse.status, 400, 'the token must be single-use');
+        } finally {
+            child.kill();
+            try { fs.unlinkSync(path.join(ROOT, 'db.reset.json')); } catch (_) {}
+        }
+    });
+});

@@ -190,6 +190,7 @@ function initDb() {
 
     newDb.stats = {};
     newDb.comments = [];
+    newDb.password_resets = [];
     newDb.site_settings = [];
 
     writeDb(newDb);
@@ -224,6 +225,16 @@ const db = {
         writeDb(data);
         return data.users[index];
     },
+    setPassword: (id, passwordHash) => {
+        const data = readDb();
+        const u = data.users.find(u => u.id === num(id));
+        if (!u) return null;
+        u.password = passwordHash;
+        u.updated_at = new Date().toISOString();
+        writeDb(data);
+        return u;
+    },
+
     deleteUser: (id) => {
         const data = readDb();
         data.users = data.users.filter(u => u.id !== num(id));
@@ -546,6 +557,61 @@ const db = {
             },
             articles
         };
+    },
+
+    // ---------------- password resets ----------------
+    createResetToken: (userId, tokenHash, expiresAt) => {
+        const data = readDb();
+        if (!Array.isArray(data.password_resets)) data.password_resets = [];
+        // Supersede any outstanding token for this user
+        data.password_resets.forEach(t => {
+            if (t.user_id === num(userId) && !t.used_at) t.used_at = new Date().toISOString();
+        });
+        const token = {
+            id: data.password_resets.length ? Math.max(...data.password_resets.map(t => t.id)) + 1 : 1,
+            user_id: num(userId),
+            token_hash: tokenHash,
+            expires_at: expiresAt,
+            used_at: null,
+            created_at: new Date().toISOString()
+        };
+        data.password_resets.push(token);
+        writeDb(data);
+        return token;
+    },
+
+    getValidResetToken: (tokenHash) => {
+        const data = readDb();
+        if (!Array.isArray(data.password_resets)) return null;
+        const now = new Date();
+        return data.password_resets.find(t =>
+            t.token_hash === tokenHash && !t.used_at && new Date(t.expires_at) > now) || null;
+    },
+
+    consumeResetToken: (tokenHash) => {
+        const data = readDb();
+        const t = data.password_resets.find(t => t.token_hash === tokenHash);
+        if (t) t.used_at = new Date().toISOString();
+        writeDb(data);
+    },
+
+    invalidateAllResetTokens: (userId) => {
+        const data = readDb();
+        data.password_resets.forEach(t => {
+            if (t.user_id === num(userId) && !t.used_at) t.used_at = new Date().toISOString();
+        });
+        writeDb(data);
+    },
+
+    // Bumped on password change so every existing JWT stops validating.
+    revokeUserSessions: (id) => {
+        const data = readDb();
+        const u = data.users.find(u => u.id === num(id));
+        if (!u) return null;
+        u.token_version = (u.token_version || 0) + 1 || 1;
+        u.updated_at = new Date().toISOString();
+        writeDb(data);
+        return u;
     },
 
     // Stats    // Stats

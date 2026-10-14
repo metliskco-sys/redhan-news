@@ -106,6 +106,13 @@ test('every api method the frontend calls exists on the client', () => {
     assert.deepEqual(missing, [], `api methods called but not defined: ${missing.join(', ')}`);
 });
 
+test('the password reset client methods exist', () => {
+    const api = code('api.js');
+    ['forgotPassword', 'resetPassword', 'getManagedAds', 'getManagedComments',
+        'getAdStats', 'recordPageView', 'recordArticleEvent', 'uploadImage']
+        .forEach(name => assert.match(api, new RegExp(`async ${name}\\s*\\(`), `api.${name} must exist`));
+});
+
 test('no advert staff endpoint lives under an "ads" path', () => {
     // Regression guard: ad blockers broke the desk when these were under
     // /api/ads/*. Only the two public reader endpoints may use that prefix.
@@ -133,8 +140,10 @@ test('every page loads the core scripts', () => {
         const html = fs.readFileSync(path.join(ROOT, 'public', page), 'utf8');
         assert.ok(html.includes('/js/ambient.js'), `${page} must load ambient.js`);
 
-        // Auth and error pages have no navigation or advert slots
-        if (page === '404.html' || page === 'login.html' || page === 'register.html') continue;
+        // Pages with no navigation, advert slots or sections
+        const SKIP = ['404.html', 'login.html', 'register.html',
+            'forgot-password.html', 'reset-password.html'];
+        if (SKIP.includes(page)) continue;
 
         assert.ok(html.includes('/js/ads.js'), `${page} must load ads.js`);
         assert.ok(html.includes('/js/sections.js'), `${page} must load sections.js`);

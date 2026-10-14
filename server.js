@@ -114,6 +114,14 @@ app.get('/desk', (req, res) => {
     sendPage(res, 'index.html');
 });
 
+app.get('/forgot-password', (req, res) => {
+    sendPage(res, 'forgot-password.html');
+});
+
+app.get('/reset-password', (req, res) => {
+    sendPage(res, 'reset-password.html');
+});
+
 // Static content pages
 const CONTENT_PAGES = [
     'about', 'contact', 'advertise', 'careers',

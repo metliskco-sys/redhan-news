@@ -3179,3 +3179,15 @@ main, .site-footer, .cta, .masthead,
         padding-bottom: max(1.1rem, env(safe-area-inset-bottom));
     }
 }
+
+/* Inline confirmation note used by the auth flows */
+.editorial-note {
+    border: 1px solid var(--line-mid);
+    border-left: 2px solid var(--sky-400);
+    background: var(--sky-glow);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-dim);
+}

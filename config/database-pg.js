@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS users (
     role TEXT NOT NULL DEFAULT 'writer'
         CHECK (role IN ('superadmin', 'admin', 'writer', 'reader')),
     bio TEXT DEFAULT '',
+    token_version INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -92,6 +93,18 @@ CREATE TABLE IF NOT EXISTS events (
     UNIQUE (subject, bucket_date)
 );
 
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT UNIQUE NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_hash ON password_reset_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_user ON password_reset_tokens(user_id, used_at);
+
 CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug);
 CREATE INDEX IF NOT EXISTS idx_articles_status ON articles(status);
 CREATE INDEX IF NOT EXISTS idx_articles_author ON articles(author_id);
@@ -99,6 +112,17 @@ CREATE INDEX IF NOT EXISTS idx_articles_category ON articles(category_id);
 CREATE INDEX IF NOT EXISTS idx_comments_article ON comments(article_id);
 CREATE INDEX IF NOT EXISTS idx_events_subject ON events(subject, bucket_date);
 `;
+
+/**
+ * `CREATE TABLE IF NOT EXISTS` does not add columns to an existing table, so
+ * schema changes need their own idempotent ALTER statements. Everything here
+ * must be safe to run on every boot.
+ */
+const SCHEMA_UPGRADES = [
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE articles ADD COLUMN IF NOT EXISTS tags TEXT DEFAULT ''`,
+    `ALTER TABLE password_reset_tokens ADD COLUMN IF NOT EXISTS used_at TIMESTAMPTZ`
+];
 
 const CANONICAL_AD_SLOTS = [
     ['Header banner', 'header', 'Wide banner below the navigation'],
@@ -112,6 +136,9 @@ const NO_HASH = '$2a$12$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalid
 
 async function init() {
     await pool.query(SCHEMA);
+    for (const statement of SCHEMA_UPGRADES) {
+        await pool.query(statement);
+    }
     // The five advert placements are structural, not user-created rows.
     for (const [name, position, label] of CANONICAL_AD_SLOTS) {
         await pool.query(
@@ -146,15 +173,15 @@ const pg = {
 
     async createUser({ email, password, name, role = 'writer', bio = '' }) {
         const { rows } = await pool.query(
-            `INSERT INTO users (email, password, name, role, bio)
-             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            `INSERT INTO users (email, password, name, role, bio, token_version)
+             VALUES ($1, $2, $3, $4, $5, 0) RETURNING *`,
             [email, password, name, role, bio]
         );
         return rows[0];
     },
 
     async updateUser(id, updates) {
-        const allowed = ['name', 'bio', 'role'];
+        const allowed = ['name', 'bio', 'role', 'token_version'];
         const fields = Object.keys(updates).filter(k => allowed.includes(k));
         if (fields.length === 0) return this.getUserById(id);
 
@@ -165,6 +192,16 @@ const pg = {
         const { rows } = await pool.query(
             `UPDATE users SET ${setClause}, updated_at = NOW() WHERE id = $1 RETURNING *`,
             values
+        );
+        return rows[0] || null;
+    },
+
+    // Deliberately separate from updateUser: the generic allow-list must never
+    // be able to change a password.
+    async setPassword(id, passwordHash) {
+        const { rows } = await pool.query(
+            'UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+            [passwordHash, Number(id)]
         );
         return rows[0] || null;
     },
@@ -370,6 +407,53 @@ const pg = {
             position
         ]);
         return rows[0];
+    },
+
+
+    // ---------------- password resets ----------------
+    async createResetToken(userId, tokenHash, expiresAt) {
+        // Any outstanding tokens for this user become unusable first, so only
+        // the newest link ever works.
+        await pool.query(
+            'UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = $1 AND used_at IS NULL',
+            [Number(userId)]
+        );
+        const { rows } = await pool.query(
+            'INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3) RETURNING *',
+            [Number(userId), tokenHash, expiresAt]
+        );
+        return rows[0];
+    },
+
+    async getValidResetToken(tokenHash) {
+        const { rows } = await pool.query(
+            'SELECT * FROM password_reset_tokens WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW()',
+            [tokenHash]
+        );
+        return rows[0] || null;
+    },
+
+    async consumeResetToken(tokenHash) {
+        await pool.query(
+            'UPDATE password_reset_tokens SET used_at = NOW() WHERE token_hash = $1',
+            [tokenHash]
+        );
+    },
+
+    async invalidateAllResetTokens(userId) {
+        await pool.query(
+            'UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = $1 AND used_at IS NULL',
+            [Number(userId)]
+        );
+    },
+
+    // Bumped on password change so every existing JWT stops validating.
+    async revokeUserSessions(userId) {
+        await pool.query(
+            'UPDATE users SET token_version = token_version + 1, updated_at = NOW() WHERE id = $1',
+            [Number(userId)]
+        );
+        return this.getUserById(userId);
     },
 
     // ---------------- settings ----------------

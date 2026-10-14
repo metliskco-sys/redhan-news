@@ -17,6 +17,20 @@ class RedhanApp {
         this.init();
     }
 
+    /* api.js failed to load (server down mid-request, wrong path, blocked).
+       Every `api.x()` below would then throw "api is not defined", so name it
+       up front instead of surfacing a generic error. */
+    apiMissing() {
+        return typeof api === 'undefined';
+    }
+
+    apiUnavailableMessage() {
+        return this.apiMissing()
+            ? 'The site shell loaded but the JavaScript API client did not. This almost always means the server '
+              + 'was unavailable when the page loaded. Reload in a moment.'
+            : null;
+    }
+
     async init() {
         try {
             this.initChrome();
@@ -543,6 +557,19 @@ class RedhanApp {
     // ============================================
     async loadInitialData() {
         const cardGrid = document.getElementById('cardGrid');
+
+        if (this.apiMissing()) {
+            if (cardGrid) {
+                cardGrid.innerHTML = `
+                    <div class="state">
+                        <h3>The site backend did not load</h3>
+                        <p>${this.apiUnavailableMessage()}</p>
+                        <button class="btn btn--sm btn--solid" onclick="location.reload()">Retry</button>
+                    </div>`;
+            }
+            return;
+        }
+
         const loadingTimeout = setTimeout(() => {
             if (this.articles.length === 0 && cardGrid) {
                 cardGrid.innerHTML = `
@@ -597,7 +624,7 @@ class RedhanApp {
                         cardGrid.innerHTML = `
                             <div class="state">
                                 <h3>Could not load articles</h3>
-                                <p>Check your connection and try again.</p>
+                                <p>${this.apiUnavailableMessage() || 'Check your connection and try again.'}</p>
                                 <button class="btn btn--sm btn--solid" onclick="location.reload()">Refresh page</button>
                             </div>
                         `;

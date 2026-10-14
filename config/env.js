@@ -10,6 +10,8 @@ const path = require('path');
 const ENV_FILE = path.join(__dirname, '..', '.env');
 
 module.exports = function loadEnv() {
+    // Allows a hermetic test run to ignore a developer's .env entirely.
+    if (process.env.NO_DOTENV) return;
     if (!fs.existsSync(ENV_FILE)) return;
 
     try {

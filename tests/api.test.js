@@ -76,8 +76,22 @@ before(async () => {
     fs.copyFileSync(path.join(ROOT, 'db.json'), path.join(ROOT, 'db.test.json'));
     process.env.DB_OVERRIDE = path.join(ROOT, 'db.test.json');
 
+    // Tests must be hermetic: force the JSON backend even when the developer
+    // has DATABASE_URL set in .env. Otherwise the suite would create and
+    // delete rows in the real database.
+    // NO_DOTENV stops config/env.js from re-reading the developer's .env,
+    // which would otherwise re-inject DATABASE_URL after we removed it.
+    const childEnv = {
+        ...process.env,
+        PORT: String(PORT),
+        NODE_ENV: 'test',
+        NO_DOTENV: '1',
+        DB_OVERRIDE: process.env.DB_OVERRIDE
+    };
+    delete childEnv.DATABASE_URL;
+
     server = spawn(process.execPath, [path.join(ROOT, 'server.js')], {
-        env: { ...process.env, PORT: String(PORT), DB_OVERRIDE: process.env.DB_OVERRIDE, NODE_ENV: 'test' },
+        env: childEnv,
         stdio: ['ignore', 'pipe', 'pipe']
     });
 
@@ -89,6 +103,9 @@ before(async () => {
     });
 
     await waitForServer();
+
+    // Guard: if this ever points at a real database, fail loudly.
+    assert.ok(!childEnv.DATABASE_URL && childEnv.NO_DOTENV === '1', 'tests must never run against a live database');
 
     const login = await request('POST', '/api/auth/login', {
         email: 'super@redhan.mv', password: 'admin123'

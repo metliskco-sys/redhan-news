@@ -47,6 +47,7 @@ function securityHeaders(req, res, next) {
    single-process deployment.
    -------------------------------------------------- */
 const buckets = new Map();
+const IS_TEST = process.env.NODE_ENV === 'test';
 
 // Periodically drop expired entries so the map cannot grow without bound
 setInterval(() => {
@@ -69,6 +70,8 @@ function clientKey(req) {
  */
 function rateLimit({ windowMs = 15 * 60 * 1000, max = 100, keyFn = 'ip', message = 'Too many requests. Please slow down.' }) {
     return (req, res, next) => {
+        if (IS_TEST) return next();
+
         let key = clientKey(req);
         if (keyFn === 'ip+email') {
             key += ':' + String(req.body?.email || '').toLowerCase();
@@ -122,6 +125,7 @@ function clearLoginFailures(email, ip) {
 }
 
 function isLoginLocked(email, ip) {
+    if (IS_TEST) return false;
     const entry = loginFailures.get(`${String(email).toLowerCase()}|${ip}`);
     if (!entry) return false;
     if (entry.lockedUntil > Date.now()) return true;

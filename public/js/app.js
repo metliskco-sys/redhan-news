@@ -573,7 +573,6 @@ class RedhanApp {
             // Render everything
             this.renderArticles();
             this.renderCategories();
-            this.renderAds();
             if (window.RedhanSections) window.RedhanSections.load();
         } catch (error) {
             clearTimeout(loadingTimeout);
@@ -591,8 +590,7 @@ class RedhanApp {
                     this.ads = adsData.ads || [];
                     this.renderArticles();
                     this.renderCategories();
-                    this.renderAds();
-                    this.showToast('Data loaded successfully', 'success');
+                            this.showToast('Data loaded successfully', 'success');
                 } catch (retryError) {
                     console.error('Retry failed:', retryError);
                     if (cardGrid) {
@@ -770,17 +768,8 @@ class RedhanApp {
         // Categories are rendered in admin panel
     }
 
-    // ============================================
-    // ADS
-    // ============================================
-    renderAds() {
-        if (this.ads.length === 0) return;
-        const randomAd = this.ads[Math.floor(Math.random() * this.ads.length)];
-        const text = document.getElementById('adText');
-        const link = document.getElementById('adLink');
-        if (text) text.textContent = randomAd.content || '';
-        if (link) link.href = randomAd.link_url || '#';
-    }
+    /* Advert rendering is handled by the shared ads.js on every page, which
+       paints .adunit[data-ad] slots. Nothing to do here. */
 
     // ============================================
     // AUTHENTICATION

@@ -2,7 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
-const DB_PATH = path.join(__dirname, '..', 'db.json');
+const DB_PATH = process.env.DB_OVERRIDE
+    ? path.resolve(process.env.DB_OVERRIDE)
+    : path.join(__dirname, '..', 'db.json');
 
 function readDb() {
     try {

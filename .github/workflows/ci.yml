@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check all files
+        run: npm run check
+
+      - name: Run test suite
+        run: npm test
+
+      - name: Boots and serves traffic
+        run: |
+          JWT_SECRET=ci-secret-of-at-least-thirty-two-chars npm start &
+          SERVER_PID=$!
+          for i in $(seq 1 20); do
+            if curl -sf http://127.0.0.1:3000/api/health > /dev/null; then
+              echo "Server booted and is healthy"
+              curl -sf http://127.0.0.1:3000/api/articles > /dev/null && echo "Articles served"
+              kill $SERVER_PID
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server failed to boot"
+          kill $SERVER_PID 2>/dev/null || true
+          exit 1
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+      - name: Verify no secrets are committed
+        run: |
+          # .env.example is meant to be tracked; only the real .env must not be
+          tracked=$(git ls-files | grep -E "^(db\.json|\.env|uploads/)" || true)
+          if [ -n "$tracked" ]; then
+            echo "ERROR: these secret-bearing files are tracked:"
+            echo "$tracked"
+            exit 1
+          fi
+          echo "No secrets tracked"

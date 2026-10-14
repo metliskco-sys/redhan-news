@@ -11,6 +11,9 @@ const path = require('path');
 const fs = require('fs');
 
 (async () => {
+    // Read .env so DATABASE_URL does not have to be exported by hand
+    require('../config/env')();
+
     if (!process.env.DATABASE_URL) {
         console.error('DATABASE_URL is required.');
         process.exit(1);

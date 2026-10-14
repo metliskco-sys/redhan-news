@@ -80,31 +80,35 @@ app.use('/api/', security.rateLimit({
     message: 'Too many requests. Try again shortly.'
 }));
 
-// Reports storage mode and whether the database actually answers. This is what
-// turns "Server error" on every endpoint into a diagnosable answer.
-app.get('/api/health', async (req, res) => {
-    const usingPostgres = !!process.env.DATABASE_URL;
-    const health = {
+// Liveness probe. Must answer immediately and must NOT touch the database:
+// hosts use this path to decide whether a deploy succeeded, so an unreachable
+// third-party service here hangs the whole deploy.
+app.get('/api/health', (req, res) => {
+    res.json({
         status: 'ok',
-        storage: usingPostgres ? 'postgres' : 'json-file',
+        storage: process.env.DATABASE_URL ? 'postgres' : 'json-file',
         timestamp: new Date().toISOString()
-    };
+    });
+});
 
+// Readiness probe. Reports whether storage actually answers. Never used by the
+// host for deploy decisions, so it is safe to wait on the network here.
+app.get('/api/health/db', async (req, res) => {
     try {
         // getStats exists on both backends and touches real storage
         await db.getStats();
-        health.database = 'reachable';
+        res.json({ status: 'ok', database: 'reachable' });
     } catch (error) {
-        health.status = 'degraded';
         // Only the driver code is exposed, never the connection string
-        health.database = 'unreachable';
-        health.databaseError = {
-            code: error.code || null,
-            message: error.message || String(error)
-        };
+        res.status(503).json({
+            status: 'degraded',
+            database: 'unreachable',
+            databaseError: {
+                code: error.code || null,
+                message: error.message || String(error)
+            }
+        });
     }
-
-    res.status(health.status === 'ok' ? 200 : 503).json(health);
 });
 
 // Page helper: res.sendFile() resets Cache-Control, so read + send instead

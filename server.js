@@ -6,6 +6,7 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const security = require('./config/security');
+const db = require('./config/db');
 const authRoutes = require('./routes/auth');
 const articleRoutes = require('./routes/articles');
 const categoryRoutes = require('./routes/categories');
@@ -79,8 +80,31 @@ app.use('/api/', security.rateLimit({
     message: 'Too many requests. Try again shortly.'
 }));
 
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Reports storage mode and whether the database actually answers. This is what
+// turns "Server error" on every endpoint into a diagnosable answer.
+app.get('/api/health', async (req, res) => {
+    const usingPostgres = !!process.env.DATABASE_URL;
+    const health = {
+        status: 'ok',
+        storage: usingPostgres ? 'postgres' : 'json-file',
+        timestamp: new Date().toISOString()
+    };
+
+    try {
+        // getStats exists on both backends and touches real storage
+        await db.getStats();
+        health.database = 'reachable';
+    } catch (error) {
+        health.status = 'degraded';
+        // Only the driver code is exposed, never the connection string
+        health.database = 'unreachable';
+        health.databaseError = {
+            code: error.code || null,
+            message: error.message || String(error)
+        };
+    }
+
+    res.status(health.status === 'ok' ? 200 : 503).json(health);
 });
 
 // Page helper: res.sendFile() resets Cache-Control, so read + send instead

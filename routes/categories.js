@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const db = require('../config/db');
 const { authMiddleware, requireRole } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 
 // @route   GET /api/categories
 // @desc    Get all categories (public)
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const categories = db.getCategories();
+    const categories = await db.getCategories();
     res.json({ categories });
   } catch (error) {
     console.error('Error in GET /api/categories:', error);
@@ -21,7 +21,7 @@ router.get('/', (req, res) => {
 router.post('/', authMiddleware, requireRole('admin', 'superadmin'), [
   body('name').notEmpty(),
   body('slug').notEmpty()
-], (req, res) => {
+], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -29,7 +29,7 @@ router.post('/', authMiddleware, requireRole('admin', 'superadmin'), [
 
   try {
     const { name, slug, description } = req.body;
-    const category = db.createCategory({ name, slug, description });
+    const category = await db.createCategory({ name, slug, description });
     res.status(201).json({ category });
   } catch (error) {
     console.error('Error in POST /api/categories:', error);
@@ -39,10 +39,10 @@ router.post('/', authMiddleware, requireRole('admin', 'superadmin'), [
 
 // @route   PUT /api/categories/:id
 // @desc    Update category (admin/superadmin)
-router.put('/:id', authMiddleware, requireRole('admin', 'superadmin'), (req, res) => {
+router.put('/:id', authMiddleware, requireRole('admin', 'superadmin'), async (req, res) => {
   try {
     const { name, slug, description } = req.body;
-    const category = db.updateCategory(req.params.id, { name, slug, description });
+    const category = await db.updateCategory(req.params.id, { name, slug, description });
     if (!category) {
       return res.status(404).json({ error: 'Category not found' });
     }
@@ -55,9 +55,9 @@ router.put('/:id', authMiddleware, requireRole('admin', 'superadmin'), (req, res
 
 // @route   DELETE /api/categories/:id
 // @desc    Delete category (admin/superadmin)
-router.delete('/:id', authMiddleware, requireRole('admin', 'superadmin'), (req, res) => {
+router.delete('/:id', authMiddleware, requireRole('admin', 'superadmin'), async (req, res) => {
   try {
-    db.deleteCategory(req.params.id);
+    await db.deleteCategory(req.params.id);
     res.json({ message: 'Category deleted' });
   } catch (error) {
     console.error('Error in DELETE /api/categories/:id:', error);

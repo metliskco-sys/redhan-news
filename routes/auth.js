@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const db = require('../config/db');
 const security = require('../config/security');
 const { hashPassword, comparePassword, generateToken, authMiddleware, requireRole } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
@@ -45,7 +45,7 @@ router.post('/signup', ipLimiter, signupLimiter, [
     body('email').isEmail().normalizeEmail(),
     body('name').trim().notEmpty().isLength({ max: 80 }),
     PASSWORD_RULE
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -55,11 +55,11 @@ router.post('/signup', ipLimiter, signupLimiter, [
 
     try {
         // Same generic error whether or not the address exists
-        if (db.getUser(email)) {
+        if (await db.getUser(email)) {
             return res.status(409).json({ error: 'That email is already registered.' });
         }
 
-        const user = db.createUser({
+        const user = await db.createUser({
             email,
             password: hashPassword(password),
             name,
@@ -79,7 +79,7 @@ router.post('/signup', ipLimiter, signupLimiter, [
 router.post('/login', ipLimiter, loginLimiter, [
     body('email').isEmail().normalizeEmail(),
     body('password').isString().notEmpty()
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -94,7 +94,7 @@ router.post('/login', ipLimiter, loginLimiter, [
     }
 
     try {
-        const user = db.getUser(email);
+        const user = await db.getUser(email);
 
         // Constant-ish work whether or not the user exists
         const hash = user ? user.password : '$2a$12$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidinv';
@@ -117,9 +117,9 @@ router.post('/login', ipLimiter, loginLimiter, [
 /* ============================================================
    PROFILE
    ============================================================ */
-router.get('/profile', authMiddleware, (req, res) => {
+router.get('/profile', authMiddleware, async (req, res) => {
     try {
-        const user = db.getUserById(req.user.id);
+        const user = await db.getUserById(req.user.id);
         if (!user) return res.status(404).json({ error: 'User not found' });
         res.json({ user: safeUser(user) });
     } catch (error) {
@@ -131,7 +131,7 @@ router.get('/profile', authMiddleware, (req, res) => {
 router.put('/profile', authMiddleware, [
     body('name').optional().trim().notEmpty().isLength({ max: 80 }),
     body('bio').optional().isLength({ max: 500 })
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -140,7 +140,7 @@ router.put('/profile', authMiddleware, [
     try {
         const { name, bio } = req.body;
         // A user may only edit their own profile (id comes from the token)
-        const user = db.updateUser(req.user.id, { name, bio });
+        const user = await db.updateUser(req.user.id, { name, bio });
         if (!user) return res.status(404).json({ error: 'User not found' });
         res.json({ user: safeUser(user) });
     } catch (error) {
@@ -157,7 +157,7 @@ router.post('/register', authMiddleware, requireRole('superadmin'), ipLimiter, [
     body('name').trim().notEmpty().isLength({ max: 80 }),
     PASSWORD_RULE,
     body('role').optional().isIn(['admin', 'writer', 'reader'])
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -166,12 +166,12 @@ router.post('/register', authMiddleware, requireRole('superadmin'), ipLimiter, [
     const { email, name, password, role } = req.body;
 
     try {
-        if (db.getUser(email)) {
+        if (await db.getUser(email)) {
             return res.status(409).json({ error: 'Email already registered' });
         }
 
         const hashedPassword = hashPassword(password);
-        const user = db.createUser({
+        const user = await db.createUser({
             email,
             password: hashedPassword,
             name,
@@ -185,9 +185,9 @@ router.post('/register', authMiddleware, requireRole('superadmin'), ipLimiter, [
     }
 });
 
-router.get('/users', authMiddleware, requireRole('superadmin', 'admin'), (req, res) => {
+router.get('/users', authMiddleware, requireRole('superadmin', 'admin'), async (req, res) => {
     try {
-        const users = db.getAllUsers().map(safeUser);
+        const users = await db.getAllUsers().map(safeUser);
         res.json({ users });
     } catch (error) {
         console.error('Users list error:', error);
@@ -197,7 +197,7 @@ router.get('/users', authMiddleware, requireRole('superadmin', 'admin'), (req, r
 
 router.put('/users/:id/role', authMiddleware, requireRole('superadmin'), [
     body('role').isIn(['admin', 'writer', 'reader']).withMessage('Invalid role')
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -212,18 +212,18 @@ router.put('/users/:id/role', authMiddleware, requireRole('superadmin'), [
             return res.status(403).json({ error: 'You cannot change your own role.' });
         }
 
-        const target = db.getUserById(targetId);
+        const target = await db.getUserById(targetId);
         if (!target) return res.status(404).json({ error: 'User not found' });
 
         // A superadmin may not demote the last remaining superadmin
         if (target.role === 'superadmin' && role !== 'superadmin') {
-            const remaining = db.getAllUsers().filter(u => u.role === 'superadmin');
+            const remaining = await db.getAllUsers().filter(u => u.role === 'superadmin');
             if (remaining.length <= 1) {
                 return res.status(403).json({ error: 'This is the only super admin — promote another first.' });
             }
         }
 
-        const user = db.updateUser(targetId, { role });
+        const user = await db.updateUser(targetId, { role });
         res.json({ user: safeUser(user) });
     } catch (error) {
         console.error('Role update error:', error);
@@ -231,7 +231,7 @@ router.put('/users/:id/role', authMiddleware, requireRole('superadmin'), [
     }
 });
 
-router.delete('/users/:id', authMiddleware, requireRole('superadmin'), (req, res) => {
+router.delete('/users/:id', authMiddleware, requireRole('superadmin'), async (req, res) => {
     try {
         const targetId = Number(req.params.id);
 
@@ -239,18 +239,18 @@ router.delete('/users/:id', authMiddleware, requireRole('superadmin'), (req, res
             return res.status(403).json({ error: 'You cannot delete your own account.' });
         }
 
-        const target = db.getUserById(targetId);
+        const target = await db.getUserById(targetId);
         if (!target) return res.status(404).json({ error: 'User not found' });
 
         // Prevent locking everyone out by deleting the last superadmin
         if (target.role === 'superadmin') {
-            const remaining = db.getAllUsers().filter(u => u.role === 'superadmin');
+            const remaining = await db.getAllUsers().filter(u => u.role === 'superadmin');
             if (remaining.length <= 1) {
                 return res.status(403).json({ error: 'This is the only super admin.' });
             }
         }
 
-        db.deleteUser(targetId);
+        await db.deleteUser(targetId);
         res.json({ message: 'User deleted' });
     } catch (error) {
         console.error('User delete error:', error);

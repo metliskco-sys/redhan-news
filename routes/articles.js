@@ -1,19 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const db = require('../config/db');
 const { authMiddleware, requireRole } = require('../middleware/auth');
 const security = require('../config/security');
 const { body, validationResult } = require('express-validator');
 
 // @route   GET /api/articles
 // @desc    Get all published articles (public)
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { category, search, limit = 10, page = 1 } = req.query;
-    let articles = db.getArticles({ status: 'published' });
+    let articles = await db.getArticles({ status: 'published' });
 
     if (category) {
-      const cat = db.getCategoryBySlug(category);
+      const cat = await db.getCategoryBySlug(category);
       if (cat) {
         articles = articles.filter(a => a.category_id === cat.id);
       }
@@ -28,16 +28,16 @@ router.get('/', (req, res) => {
     }
 
     // Enrich with author and category data
-    articles = articles.map(article => {
-      const author = db.getUserById(article.author_id);
-      const category = db.getCategory(article.category_id);
+    articles = await Promise.all(articles.map(async article => {
+      const author = await db.getUserById(article.author_id);
+      const category = await db.getCategory(article.category_id);
       return {
         ...article,
         author_name: author ? author.name : 'Unknown',
         category_name: category ? category.name : null,
         category_slug: category ? category.slug : null
       };
-    });
+    }));
 
     res.json({ articles });
   } catch (error) {
@@ -48,18 +48,18 @@ router.get('/', (req, res) => {
 
 // @route   GET /api/articles/:slug
 // @desc    Get single article by slug (public)
-router.get('/:slug', (req, res) => {
+router.get('/:slug', async (req, res) => {
   try {
-    const article = db.getArticleBySlug(req.params.slug);
+    const article = await db.getArticleBySlug(req.params.slug);
     if (!article || article.status !== 'published') {
       return res.status(404).json({ error: 'Article not found' });
     }
 
     // Increment views
-    db.updateArticle(article.id, { views: (article.views || 0) + 1 });
+    await db.updateArticle(article.id, { views: (article.views || 0) + 1 });
 
-    const author = db.getUserById(article.author_id);
-    const category = db.getCategory(article.category_id);
+    const author = await db.getUserById(article.author_id);
+    const category = await db.getCategory(article.category_id);
 
     res.json({
       article: {
@@ -83,7 +83,7 @@ router.post('/', authMiddleware, requireRole('superadmin', 'admin', 'writer'), [
   body('excerpt').trim().notEmpty().isLength({ max: 1000 }),
   body('featured_image').optional().isLength({ max: 500 }),
   body('tags').optional().isString().isLength({ max: 300 })
-], (req, res) => {
+], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -102,12 +102,12 @@ router.post('/', authMiddleware, requireRole('superadmin', 'admin', 'writer'), [
     let slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
     // Check if slug exists
-    const existing = db.getArticleBySlug(slug);
+    const existing = await db.getArticleBySlug(slug);
     if (existing) {
       return res.status(400).json({ error: 'Article with this title already exists' });
     }
 
-    const article = db.createArticle({
+    const article = await db.createArticle({
       title,
       slug,
       excerpt,
@@ -131,14 +131,14 @@ router.post('/', authMiddleware, requireRole('superadmin', 'admin', 'writer'), [
 router.put('/:id', authMiddleware, requireRole('admin', 'writer', 'superadmin'), [
   body('title').optional().notEmpty(),
   body('content').optional().notEmpty()
-], (req, res) => {
+], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
   try {
-    const article = db.getArticle(req.params.id);
+    const article = await db.getArticle(req.params.id);
     if (!article) {
       return res.status(404).json({ error: 'Article not found' });
     }
@@ -164,7 +164,7 @@ router.put('/:id', authMiddleware, requireRole('admin', 'writer', 'superadmin'),
       updates.slug = req.body.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     }
 
-    const updatedArticle = db.updateArticle(req.params.id, updates);
+    const updatedArticle = await db.updateArticle(req.params.id, updates);
     res.json({ article: updatedArticle });
   } catch (error) {
     console.error('Error in PUT /api/articles/:id:', error);
@@ -174,9 +174,9 @@ router.put('/:id', authMiddleware, requireRole('admin', 'writer', 'superadmin'),
 
 // @route   DELETE /api/articles/:id
 // @desc    Delete article (author/admin/superadmin)
-router.delete('/:id', authMiddleware, requireRole('admin', 'writer', 'superadmin'), (req, res) => {
+router.delete('/:id', authMiddleware, requireRole('admin', 'writer', 'superadmin'), async (req, res) => {
   try {
-    const article = db.getArticle(req.params.id);
+    const article = await db.getArticle(req.params.id);
     if (!article) {
       return res.status(404).json({ error: 'Article not found' });
     }
@@ -185,7 +185,7 @@ router.delete('/:id', authMiddleware, requireRole('admin', 'writer', 'superadmin
       return res.status(403).json({ error: 'Not authorized to delete this article' });
     }
 
-    db.deleteArticle(req.params.id);
+    await db.deleteArticle(req.params.id);
     res.json({ message: 'Article deleted' });
   } catch (error) {
     console.error('Error in DELETE /api/articles/:id:', error);
@@ -195,9 +195,9 @@ router.delete('/:id', authMiddleware, requireRole('admin', 'writer', 'superadmin
 
 // @route   GET /api/articles/dashboard/stats
 // @desc    Get dashboard stats (admin/writer)
-router.get('/dashboard/stats', authMiddleware, requireRole('admin', 'writer', 'superadmin'), (req, res) => {
+router.get('/dashboard/stats', authMiddleware, requireRole('admin', 'writer', 'superadmin'), async (req, res) => {
   try {
-    const stats = db.getStats();
+    const stats = await db.getStats();
     res.json({ stats });
   } catch (error) {
     console.error('Error in GET /api/articles/dashboard/stats:', error);
@@ -207,15 +207,16 @@ router.get('/dashboard/stats', authMiddleware, requireRole('admin', 'writer', 's
 
 // @route   GET /api/articles/dashboard/recent
 // @desc    Get recent articles (admin/writer)
-router.get('/dashboard/recent', authMiddleware, requireRole('admin', 'writer', 'superadmin'), (req, res) => {
+router.get('/dashboard/recent', authMiddleware, requireRole('admin', 'writer', 'superadmin'), async (req, res) => {
   try {
-    const articles = db.getArticles().slice(0, 10).map(article => {
-      const author = db.getUserById(article.author_id);
+    const allArticles = await db.getArticles();
+    const articles = await Promise.all(allArticles.slice(0, 10).map(async article => {
+      const author = await db.getUserById(article.author_id);
       return {
         ...article,
         author_name: author ? author.name : 'Unknown'
       };
-    });
+    }));
     res.json({ articles });
   } catch (error) {
     console.error('Error in GET /api/articles/dashboard/recent:', error);
@@ -232,7 +233,7 @@ router.post('/:id/event', security.rateLimit({
     message: 'Too many events.'
 }), [
     body('type').isIn(['impression', 'click']).withMessage('Invalid event type')
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -244,7 +245,7 @@ router.post('/:id/event', security.rateLimit({
     }
 
     try {
-        db.recordEvent('article:' + id, req.body.type);
+        await db.recordEvent('article:' + id, req.body.type);
         res.status(204).end();
     } catch (error) {
         console.error('Article event error:', error);
@@ -257,9 +258,9 @@ router.post('/:id/event', security.rateLimit({
 // @desc    Fetch a single article regardless of status (admin/editorial).
 //          The public /:slug route only serves published stories, so this is
 //          what lets the desk open a draft for editing.
-router.get('/manage/:id', authMiddleware, requireRole('superadmin', 'admin', 'writer'), (req, res) => {
+router.get('/manage/:id', authMiddleware, requireRole('superadmin', 'admin', 'writer'), async (req, res) => {
     try {
-        const article = db.getArticle(req.params.id);
+        const article = await db.getArticle(req.params.id);
         if (!article) {
             return res.status(404).json({ error: 'Article not found' });
         }

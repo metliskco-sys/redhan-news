@@ -39,7 +39,7 @@ const upload = multer({
 
 // @route   POST /api/upload/image
 // @desc    Upload a single cover image (any editorial role)
-router.post('/image', authMiddleware, requireRole('superadmin', 'admin', 'writer'), (req, res) => {
+router.post('/image', authMiddleware, requireRole('superadmin', 'admin', 'writer'), async (req, res) => {
     upload.single('image')(req, res, async (err) => {
         if (err) {
             const message = err.code === 'LIMIT_FILE_SIZE'
@@ -83,7 +83,7 @@ router.post('/image', authMiddleware, requireRole('superadmin', 'admin', 'writer
 });
 
 // Multer errors must not crash the request
-router.use((err, req, res, next) => {
+router.use(async (err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         const message = err.code === 'LIMIT_FILE_SIZE'
             ? 'Image is too large (8 MB maximum).'

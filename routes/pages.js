@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const db = require('../config/db');
 const security = require('../config/security');
 const { authMiddleware, requireRole } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
@@ -50,7 +50,7 @@ function isCountable(path) {
 // @desc    Record a page view (public, fire-and-forget)
 router.post('/event', viewLimiter, [
     body('path').optional().isString().isLength({ max: 80 })
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -60,7 +60,7 @@ router.post('/event', viewLimiter, [
         const path = safePath(req.body.path);
         // Only reader pages count; /desk, /login and unknown routes do not
         if (isCountable(path)) {
-            db.recordEvent('page:' + path, 'impression');
+            await db.recordEvent('page:' + path, 'impression');
         }
         res.status(204).end();
     } catch (error) {

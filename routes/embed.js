@@ -111,7 +111,7 @@ function fetchJson(url) {
 //          Returns provider metadata plus sanitised HTML. If the provider
 //          cannot be reached we fall back to a plain link card, so an embed
 //          never breaks an article.
-router.get('/resolve', (req, res) => {
+router.get('/resolve', async (req, res) => {
     const url = safeUrl(String(req.query.url || ''));
     if (!url) {
         return res.status(400).json({ error: 'That is not a valid http(s) URL.' });

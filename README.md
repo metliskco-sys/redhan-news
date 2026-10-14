@@ -4,7 +4,8 @@ A full-stack news site for the Maldives, published in English.
 
 - **Frontend:** hand-written HTML, CSS and JavaScript — no framework, no build step
 - **Backend:** Node.js + Express
-- **Storage:** a JSON file (`db.json`), read and written atomically
+- **Storage:** Postgres when `DATABASE_URL` is set; otherwise a local JSON
+  file for development. See *Storage* below.
 - **Auth:** JWT with bcrypt password hashing and role-based access control
 
 ## Running it
@@ -28,7 +29,46 @@ Open <http://localhost:3000>.
 | Staff desk | `/desk` (redirects to `/login` unless signed in as admin) |
 | Sign in | `/login` |
 
-### `JWT_SECRET`
+## Storage
+
+The app runs on **Postgres** when `DATABASE_URL` is set, and on a **JSON file**
+otherwise. The JSON fallback keeps the project runnable with zero setup, but it
+rewrites the whole file on every write and lives on local disk — so it cannot
+handle concurrent writes and loses everything on restart. Production should
+always set `DATABASE_URL`.
+
+Free Postgres options: **Neon**, **Supabase**, or the Render database included
+in `render.yaml`.
+
+To move existing data across:
+
+```bash
+DATABASE_URL=postgres://… npm run migrate
+```
+
+`scripts/migrate-json-to-pg.js` copies users, categories, articles, comments,
+advert slots, settings and the analytics buckets, then resets the ID sequences.
+It truncates first, so it is safe to re-run.
+
+The schema lives in `config/database-pg.js`. All writes are parameterised, and
+`UPDATE` statements only accept an allow-list of columns — callers cannot reach
+`author_id`, `created_at` or `id` through an update payload.
+
+## Testing
+
+```
+npm test              # 55 tests
+npm run check         # syntax-check every JS file
+```
+
+- `tests/api.test.js` — boots a real server against a throwaway database and
+  exercises every endpoint, including authorisation, the comment moderation
+  lifecycle, and the security headers.
+- `tests/frontend.test.js` — static analysis of the frontend. It fails the
+  build if a `this.method()` call refers to a method that does not exist, which
+  is the exact class of bug that silently broke comment moderation.
+
+## `JWT_SECRET`
 
 This signs login tokens. **The server will not start in production without it.**
 
@@ -62,7 +102,8 @@ The database is seeded on first run with:
 
 ```
 server.js              Express entry point, routing, security headers
-config/                database, security controls, .env loader
+config/                storage (Postgres + JSON), security controls, .env loader
+scripts/               JSON-to-Postgres data migration
 middleware/auth.js     JWT issue/verify, bcrypt, role guards
 routes/                auth, articles, categories, comments, ads, stats, pages, embed, upload
 public/                the site: HTML pages, CSS, JS, images

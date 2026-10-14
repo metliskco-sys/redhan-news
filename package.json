@@ -7,6 +7,7 @@
     "start": "node server.js",
     "dev": "node server.js",
     "test": "node --test tests/",
+    "migrate": "node scripts/migrate-json-to-pg.js",
     "test:frontend": "node --test tests/frontend.test.js",
     "test:api": "node --test tests/api.test.js",
     "check": "node --check server.js && node --check public/js/app.js && node --check public/js/api.js && node --check public/js/article.js && node --check public/js/ambient.js && node --check public/js/analytics.js && node --check public/js/gallery.js && node --check public/js/chrome.js && node --check public/js/ads.js && node --check public/js/embeds.js && node --check public/js/editor.js && node --check config/database.js && node --check routes/upload.js && node --check config/security.js && echo All files pass syntax check"

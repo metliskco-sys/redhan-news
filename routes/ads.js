@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const db = require('../config/db');
 const security = require('../config/security');
 const { authMiddleware, requireRole } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
@@ -32,9 +32,9 @@ const publicAd = (ad) => ({
 // @route   GET /api/ads
 // @desc    Live ads for every placement (public)
 //          Only placements that are switched on AND have an image.
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     try {
-        const ads = db.getAds()
+        const ads = await db.getAds()
             .filter(a => a.is_active && a.image_url)
             .map(publicAd);
         res.json({ ads });
@@ -48,7 +48,7 @@ router.get('/', (req, res) => {
 // @desc    Record an advert impression or click (public, fire-and-forget)
 router.post('/:position/event', eventLimiter, [
     body('type').isIn(['impression', 'click']).withMessage('Invalid event type')
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -60,7 +60,7 @@ router.post('/:position/event', eventLimiter, [
     }
 
     try {
-        db.recordEvent('ad:' + position, req.body.type);
+        await db.recordEvent('ad:' + position, req.body.type);
         // Always ack with 204 — a tracking pixel must never break a page
         res.status(204).end();
     } catch (error) {

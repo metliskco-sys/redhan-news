@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const db = require('../config/db');
 const { authMiddleware, requireRole } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 
@@ -14,10 +14,10 @@ const POSITIONS = ['header', 'rail', 'inline', 'article', 'footer'];
 
 // @route   GET /api/commercial/slots
 // @desc    Every placement with full detail (admin/superadmin)
-router.get('/slots', authMiddleware, requireRole('admin', 'superadmin'), (req, res) => {
+router.get('/slots', authMiddleware, requireRole('admin', 'superadmin'), async (req, res) => {
     try {
         const byPosition = {};
-        db.getAds().forEach(a => { byPosition[a.position] = a; });
+        await db.getAds().forEach(a => { byPosition[a.position] = a; });
 
         // Always return the full set, in a stable order
         const ads = POSITIONS.map(p => byPosition[p]).filter(Boolean);
@@ -30,13 +30,14 @@ router.get('/slots', authMiddleware, requireRole('admin', 'superadmin'), (req, r
 
 // @route   GET /api/commercial/metrics
 // @desc    Impressions, clicks and CTR per placement (admin/superadmin)
-router.get('/metrics', authMiddleware, requireRole('admin', 'superadmin'), (req, res) => {
+router.get('/metrics', authMiddleware, requireRole('admin', 'superadmin'), async (req, res) => {
     try {
         const days = Math.min(90, Math.max(1, parseInt(req.query.days, 10) || 14));
 
         const placements = {};
-        db.getAds().forEach(slot => {
-            const series = db.getEventSeries('ad:' + slot.position, days);
+        const slots = await db.getAds();
+        for (const slot of slots) {
+            const series = await db.getEventSeries('ad:' + slot.position, days);
             const impressions = series.reduce((s, r) => s + r.impressions, 0);
             const clicks = series.reduce((s, r) => s + r.clicks, 0);
 
@@ -48,7 +49,7 @@ router.get('/metrics', authMiddleware, requireRole('admin', 'superadmin'), (req,
                 ctr: impressions > 0 ? (clicks / impressions) * 100 : 0,
                 series
             };
-        });
+        }
 
         // Totals across every placement
         let impressions = 0;
@@ -79,7 +80,7 @@ router.put('/slots/:position', authMiddleware, requireRole('admin', 'superadmin'
     body('image_url').optional({ nullable: true }).isLength({ max: 500 }),
     body('link_url').optional({ nullable: true }).isLength({ max: 500 }),
     body('is_active').optional().isBoolean()
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -91,7 +92,7 @@ router.put('/slots/:position', authMiddleware, requireRole('admin', 'superadmin'
     }
 
     try {
-        const existing = db.getAdByPosition(position);
+        const existing = await db.getAdByPosition(position);
         if (!existing) {
             return res.status(404).json({ error: 'Unknown placement' });
         }
@@ -108,7 +109,7 @@ router.put('/slots/:position', authMiddleware, requireRole('admin', 'superadmin'
         }
         if ('is_active' in req.body) updates.is_active = !!req.body.is_active;
 
-        const ad = db.upsertAd(position, updates);
+        const ad = await db.upsertAd(position, updates);
         res.json({ ad });
     } catch (error) {
         console.error('Ad update error:', error);

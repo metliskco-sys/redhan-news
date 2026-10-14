@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const db = require('../config/db');
 const { authMiddleware, requireRole } = require('../middleware/auth');
 
 // @route   GET /api/settings
 // @desc    Get all settings (public)
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const settings = db.getSettings();
+    const settings = await db.getSettings();
     res.json({ settings });
   } catch (error) {
     console.error('Error in GET /api/settings:', error);
@@ -17,11 +17,11 @@ router.get('/', (req, res) => {
 
 // @route   PUT /api/settings/:key
 // @desc    Update setting (superadmin only)
-router.put('/:key', authMiddleware, requireRole('superadmin'), (req, res) => {
+router.put('/:key', authMiddleware, requireRole('superadmin'), async (req, res) => {
   try {
     const { value } = req.body;
     const key = req.params.key;
-    db.updateSetting(key, value);
+    await db.updateSetting(key, value);
     res.json({ message: 'Setting updated' });
   } catch (error) {
     console.error('Error in PUT /api/settings/:key:', error);
@@ -31,16 +31,18 @@ router.put('/:key', authMiddleware, requireRole('superadmin'), (req, res) => {
 
 // @route   GET /api/settings/dashboard/data
 // @desc    Get dashboard data (admin/superadmin)
-router.get('/dashboard/data', authMiddleware, requireRole('admin', 'superadmin'), (req, res) => {
+router.get('/dashboard/data', authMiddleware, requireRole('admin', 'superadmin'), async (req, res) => {
   try {
-    const stats = db.getStats();
+    const stats = await db.getStats();
 
-    const recentArticles = db.getArticles().slice(0, 5).map(article => {
-      const author = db.getUserById(article.author_id);
+    const allArticles = await db.getArticles();
+    const recentArticles = await Promise.all(allArticles.slice(0, 5).map(async article => {
+      const author = await db.getUserById(article.author_id);
       return { ...article, author_name: author ? author.name : 'Unknown' };
-    });
+    }));
 
-    const recentUsers = db.getAllUsers().slice(0, 5);
+    const allUsers = await db.getAllUsers();
+    const recentUsers = allUsers.slice(0, 5);
 
     res.json({
       stats,

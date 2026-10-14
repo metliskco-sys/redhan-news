@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const db = require('../config/db');
 const security = require('../config/security');
 const { authMiddleware, requireRole } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
@@ -27,15 +27,16 @@ function publicComment(c) {
 // @desc    Every comment, every status, for moderation (admin/superadmin).
 //          The public endpoint only returns approved comments, so the queue
 //          needs its own source.
-router.get('/manage', authMiddleware, requireRole('admin', 'superadmin'), (req, res) => {
+router.get('/manage', authMiddleware, requireRole('admin', 'superadmin'), async (req, res) => {
     try {
         // All articles, including drafts — a comment on an unpublished story
         // still needs moderating.
-        const articles = db.getArticles();
+        const articles = await db.getArticles();
         const out = [];
 
-        articles.forEach(article => {
-            db.getCommentsByArticle(article.id).forEach(c => {
+        for (const article of articles) {
+            const comments = await db.getCommentsByArticle(article.id);
+            comments.forEach(c => {
                 out.push({
                     id: c.id,
                     article_id: c.article_id,
@@ -47,7 +48,7 @@ router.get('/manage', authMiddleware, requireRole('admin', 'superadmin'), (req, 
                     created_at: c.created_at
                 });
             });
-        });
+        }
 
         out.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         res.json({ comments: out });
@@ -59,9 +60,9 @@ router.get('/manage', authMiddleware, requireRole('admin', 'superadmin'), (req, 
 
 // @route   GET /api/comments/article/:articleId
 // @desc    Approved comments only — public
-router.get('/article/:articleId', (req, res) => {
+router.get('/article/:articleId', async (req, res) => {
     try {
-        const all = db.getCommentsByArticle(req.params.articleId);
+        const all = await db.getCommentsByArticle(req.params.articleId);
         // Only 'approved' comments are visible to the world; pending and spam are not
         const visible = all.filter(c => c.status === 'approved').map(publicComment);
         res.json({ comments: visible });
@@ -77,14 +78,14 @@ router.post('/article/:articleId', commentLimiter, [
     body('author_name').trim().notEmpty().isLength({ max: 80 }),
     body('author_email').isEmail().normalizeEmail(),
     body('content').trim().notEmpty().isLength({ max: 2000 })
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
 
     try {
-        const article = db.getArticle(req.params.articleId);
+        const article = await db.getArticle(req.params.articleId);
         // Only commented on published articles
         if (!article || article.status !== 'published') {
             return res.status(404).json({ error: 'Article not found' });
@@ -92,7 +93,7 @@ router.post('/article/:articleId', commentLimiter, [
 
         const { author_name, author_email, content } = req.body;
 
-        const comment = db.createComment({
+        const comment = await db.createComment({
             article_id: Number(req.params.articleId),
             author_name,
             author_email,      // stored (needed to moderate) but never returned publicly
@@ -111,14 +112,14 @@ router.post('/article/:articleId', commentLimiter, [
 // @desc    Update comment status (admin/superadmin)
 router.put('/:id/status', authMiddleware, requireRole('admin', 'superadmin'), [
     body('status').isIn(['approved', 'spam', 'pending']).withMessage('Invalid status')
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
 
     try {
-        const comment = db.updateComment(req.params.id, { status: req.body.status });
+        const comment = await db.updateComment(req.params.id, { status: req.body.status });
         if (!comment) return res.status(404).json({ error: 'Comment not found' });
         res.json({ message: 'Comment status updated' });
     } catch (error) {
@@ -129,11 +130,11 @@ router.put('/:id/status', authMiddleware, requireRole('admin', 'superadmin'), [
 
 // @route   DELETE /api/comments/:id
 // @desc    Delete comment (admin/superadmin)
-router.delete('/:id', authMiddleware, requireRole('admin', 'superadmin'), (req, res) => {
+router.delete('/:id', authMiddleware, requireRole('admin', 'superadmin'), async (req, res) => {
     try {
-        const comment = db.getComment(req.params.id);
+        const comment = await db.getComment(req.params.id);
         if (!comment) return res.status(404).json({ error: 'Comment not found' });
-        db.deleteComment(req.params.id);
+        await db.deleteComment(req.params.id);
         res.json({ message: 'Comment deleted' });
     } catch (error) {
         console.error('Comment delete error:', error);
